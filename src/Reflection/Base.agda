@@ -1,6 +1,9 @@
+{-# OPTIONS --allow-unsolved-metas #-} 
+
 module Reflection.Base where
 
 open import Prelude
+open import Reflection.Recursion public
 
 pattern var₀ x         = var x []
 pattern var₁ x a       = var x (vArg a ∷ [])
@@ -25,7 +28,10 @@ infix 8 _↦_
 pattern sortSet t = sort (set t)
 pattern sortLit i = sort (lit i)
 
-Script = Term → TC ⊤
+Script     = Term → TC ⊤
+Types      = List Type
+Terms      = List Term
+ErrorParts = List ErrorPart
 
 macro
   showCons : Name → Script
@@ -37,34 +43,34 @@ macro
   fill : Term → Script
   fill = unify
 
+  runTC : {A : Set ℓ} → TC A → Script
+  runTC t _ = t >>=TC λ _ → return tt
+
 arity : Term → ℕ
 arity (Π[ _ ∶ _ ] b) = 1 + arity b
 arity _              = 0
 
-{-
-private
-  variable
-    n : ℕ
-mutual
-  data Even : ℕ → Set where
-    z   : Even 0
-    ss  : Odd n → Even (succ n)
-  data Odd : ℕ → Set where
-    one : Even n → Odd (succ n)
+body : Arg Term → Term
+body (arg i x) = x
 
-module _ {P : ∀ n → Even n → Set} {Q : ∀ n → Odd n → Set}
-  (Pz : P 0 z)(Pss : ∀ n o → Q n o → P (succ n) (ss o)) (Pone : ∀ n e → P n e → Q (succ n) (one e)) where
-  mutual
-    elimEven : ∀ n → (e : Even n) → P n e
-    elimEven .0 z = Pz
-    elimEven .(succ _) (ss x) = Pss _ x  (elimOdd _ x)
 
-    elimOdd  : ∀ n → (o : Odd n) → Q n o
-    elimOdd .(succ _) (one x) = Pone _ x (elimEven _ x)
+infixl 10 _!!_
+_!!_ : List A → ℕ → Maybe A
+[]       !! _       = nothing
+(x ∷ xs) !! zero    = just x
+(x ∷ xs) !! (suc n) = xs !! n
 
-elimEven′ : {P : ∀ n → Even n → Set}
-  → (Pz : P 0 z) → (Pss : ∀ n → (o : Odd n) → P (succ n) (ss o))
-  → ∀ n → (e : Even n) → P n e
-elimEven′ Pz Pss .0 z = Pz
-elimEven′ Pz Pss .(succ (succ _)) (ss (one x)) = Pss _ ((one x))
--}
+varsToMetas : List Meta → Term → Term
+varsToMetas metaCxt = recTerm metaOrVar
+  con def lam pat-lam pi sort set lit unknown lit meta unknown clause absurd-clause
+  where
+    metaOrVar : ℕ → Args Term → Term
+    metaOrVar n args with metaCxt !! n
+    ... | nothing = var n args
+    ... | just x  = meta x args
+     
+newMeta' : Type → TC Meta
+newMeta' t = do
+  meta m [] ← checkType unknown t
+    where _ → typeError [ strErr "not a meta variable" ]
+  return m

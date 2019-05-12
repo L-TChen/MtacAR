@@ -1,4 +1,4 @@
-module Reflection.DeBruijn where
+module Reflection.Recursion where
 
 open import Prelude 
 open import Data.List.Relation.Unary.All
