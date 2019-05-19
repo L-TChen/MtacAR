@@ -1,4 +1,4 @@
-{-# OPTIONS --type-in-type #-}
+{-# OPTIONS -v mtac:100 --type-in-type #-}
 
 module Mtac.Example.Tauto where
 
@@ -6,6 +6,7 @@ open import Prelude
 open import Reflection.Extended
 
 open import Mtac
+open import Mtac.Core.Rewrite
 
 {-# TERMINATING #-}
 tauto : (P : Set) → ○ P
