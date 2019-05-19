@@ -1,27 +1,33 @@
 {-
   This module is partly from Ulf's agda-prelude, see https://github.com/UlfNorell/agda-prelude
 -}
+{-# OPTIONS --without-K --safe #-}
 module Reflection.Extended where
 
 open import Prelude
-open import Reflection.DeBruijn
+--open import Reflection.DeBruijn
 
--- Every metaprogram / tactic is of type `Term → TC ⊤`
-Tactic : Set
-Tactic = Term → TC ⊤
+import Agda.Builtin.Reflection as Builtin
+open module TC = Builtin public
+  renaming ( left-assoc  to assocˡ
+           ; right-assoc to assocʳ
+           ; primQNameFixity to getFixity
+           ; arg-info to argInfo
+           ; agda-sort to sort
+           ; record-type to record′
+           ; data-cons   to constructor′
+           ; prim-fun    to primitive′ )
 
--- Shorthands for List A
-Types Metas Terms ErrorParts : Set
-Types      = List Type
-Metas      = List Meta
-Terms      = List Term
-ErrorParts = List ErrorPart
-
-set₀ : Type
-set₀ = sort (lit 0)
-
-set! : Type
-set! = sort unknown
+pattern vArg ty            = arg (argInfo visible relevant)   ty
+pattern hArg ty            = arg (argInfo hidden relevant)    ty
+pattern iArg ty            = arg (argInfo instance′ relevant) ty
+pattern vLam s t           = lam visible   (abs s t)
+pattern hLam s t           = lam hidden    (abs s t)
+pattern iLam s t           = lam instance′ (abs s t)
+pattern Π[_∶_]_  s a ty    = pi a (abs s ty)
+pattern vΠ[_∶_]_ s a ty    = Π[ s ∶ (vArg a) ] ty
+pattern hΠ[_∶_]_ s a ty    = Π[ s ∶ (hArg a) ] ty
+pattern iΠ[_∶_]_ s a ty    = Π[ s ∶ (iArg a) ] ty
 
 pattern var₀ x         = var x []
 pattern var₁ x a       = var x (vArg a ∷ [])
@@ -46,6 +52,125 @@ infix 8 _↦_
 pattern sortSet t = sort (set t)
 pattern sortLit i = sort (lit i)
 
+instance
+  NameEq : Eq Name
+  _==_ ⦃ NameEq ⦄ = Builtin.primQNameEquality
+
+  NameShow : Show Name
+  show ⦃ NameShow ⦄ = Builtin.primShowQName
+
+  MetaEq : Eq Meta
+  _==_ ⦃ MetaEq ⦄ = Builtin.primMetaEquality
+
+  MetaShow : Show Meta
+  show ⦃ MetaShow ⦄ = Builtin.primShowMeta
+
+  LitShow : Show Literal
+  show ⦃ LitShow ⦄ (nat n)    = show n
+  show ⦃ LitShow ⦄ (word64 n) = show n
+  show ⦃ LitShow ⦄ (float x)  = show x
+  show ⦃ LitShow ⦄ (char c)   = show c
+  show ⦃ LitShow ⦄ (string s) = show s
+  show ⦃ LitShow ⦄ (name x)   = show x
+  show ⦃ LitShow ⦄ (meta x)   = show x
+
+  VisibilityShow : Show Visibility
+  VisibilityShow = record
+    { show = λ
+      { visible → "Explicit"
+      ; hidden  → "Implicit"
+      ; instance′ → "Instance" } }
+
+  RelevanceShow : Show Relevance
+  RelevanceShow = record
+    { show = λ
+      { relevant   → "relevant"
+      ; irrelevant → "irrelevant" } }
+      
+  ArgInfoShow : Show ArgInfo
+  show ⦃ ArgInfoShow ⦄ (argInfo v r) = show v ++ " " ++ show r ++ " arg"
+  
+  TCM : Monad TC
+  return ⦃ TCM ⦄ = returnTC 
+  _>>=_  ⦃ TCM ⦄ = bindTC 
+
+  TCA : Applicative TC
+  TCA = monad⇒applicative ⦃ TCM ⦄
+      
+  TCFunctor : Functor TC
+  TCFunctor = TCA .functor
+
+  FunctorArg : Functor Arg 
+  _<$>_ ⦃ FunctorArg ⦄ f (arg i x) = arg i (f x)
+
+  FunctorAbs : Functor Abs
+  _<$>_ ⦃ FunctorAbs ⦄ f (abs s t) = abs s (f t)
+
+  TraversableArg : Traversable Arg
+  traverse ⦃ TraversableArg ⦄ f (arg i x) = ⦇ (arg i) (f x) ⦈
+
+  TraversableAbs : Traversable Abs
+  traverse ⦃ TraversableAbs ⦄ f (abs s x) = ⦇ (abs s) (f x) ⦈
+  
+  TCAlter : Alternative TC
+  TCAlter = record
+    { azero = typeError []
+    ; _<|>_ = catchTC
+    }
+    
+-- Shorthands for List A
+Types Metas Terms ErrorParts Names Clauses : Set
+Types      = List Type
+Metas      = List Meta
+Terms      = List Term
+ErrorParts = List ErrorPart
+Names   = List Name
+Clauses = List Clause
+
+Args : (A : Set) → Set
+Args A = List (Arg A)
+
+-- Every metaprogram / tactic is of type `Term → TC ⊤`
+Tactic : Set
+Tactic = Term → TC ⊤
+
+set₀ : Type
+set₀ = sort (lit 0)
+
+set! : Type
+set! = sort unknown
+
+visibility : ArgInfo → Visibility
+visibility (argInfo v _) = v
+
+relevance : ArgInfo → Relevance
+relevance (argInfo _ r) = r
+
+unArg : {A : Set ℓ} → Arg A → A
+unArg (arg _ x) = x
+
+getArgInfo : {A : Set ℓ} → Arg A → ArgInfo
+getArgInfo (arg i _) = i
+
+unAbs : {A : Set ℓ} → Abs A → A
+unAbs (abs _ x) = x
+
+isVisible : {A : Set ℓ} → Arg A → Bool
+isVisible (arg (argInfo visible _) _) = true
+isVisible _ = false
+
+absurd-lam : Term
+absurd-lam = pat-lam (absurd-clause (vArg absurd ∷ []) ∷ []) []
+
+give : Term → Tactic
+give v hole = unify hole v
+
+newMeta : Type → TC Term
+newMeta = checkType unknown
+
+newMeta! : TC Term
+newMeta! = newMeta unknown
+
 `λ : Term → Term
 `λ b = lam visible (abs "_" b)
 
@@ -67,49 +192,37 @@ infix 2 _=′_
 _=′_ : Term → Term → TC ⊤
 _=′_ = unify
 
-macro
-  runTC : TC A → Tactic
-  runTC t _ = t >> return tt
+evalTC : TC A → Tactic
+evalTC {A = A} c hole = do
+  v  ← c
+  `v ← quoteTC v
+  `A ← quoteTC A
+  checkedHole ← checkType hole `A
+  unify checkedHole `v
 
+macro
+  runT : Tactic → Tactic
+  runT t = t
+
+  evalT : TC A → Tactic
+  evalT = evalTC
+  
 arity : Term → ℕ
 arity (Π[ _ ∶ _ ] b) = 1 + arity b
 arity _              = 0
 
-unArg : {A : Set ℓ} → Arg A → A
-unArg (arg _ x) = x
-
-getArgInfo : {A : Set ℓ} → Arg A → ArgInfo
-getArgInfo (arg i _) = i
-
-unAbs : {A : Set ℓ} → Abs A → A
-unAbs (abs _ x) = x
-
-isVisible : {A : Set ℓ} → Arg A → Bool
-isVisible (arg (argInfo visible _) _) = true
-isVisible _ = false
-
-absurd-lam : Term
-absurd-lam = pat-lam (absurd-clause (vArg absurd ∷ []) ∷ []) []
-
-give : Term → Tactic
-give v = λ hole → unify hole v
-
 define : Arg Name → Type → List Clause → TC ⊤
 define f a cs = declareDef f a >> defineFun (unArg f) cs
-
-newMeta! : TC Term
-newMeta! = newMeta unknown
 
 typeErrorS : String → TC A
 typeErrorS s = typeError (strErr s ∷ [])
 
 blockOnMeta! : Meta → TC A
-blockOnMeta! x = commitTC TC.>>= λ _ → blockOnMeta x
+blockOnMeta! x = TC.bindTC commitTC λ _ → blockOnMeta x
 
 inferNormalisedType : Term → TC Type
 inferNormalisedType t = withNormalisation true (inferType t)
-
-
+{-
 forceFun : Type → TC Type
 forceFun a = do
   dom ← newMeta set!
@@ -123,6 +236,7 @@ inferFunRange hole = unPi =<< forceFun =<< inferType hole where
   unPi (pi _ (abs _ b)) = maybe pure (typeError ( strErr "Must be applied in a non-dependent function position"
                                            ∷ termErr b ∷ [])) $ strengthen 1 b
   unPi x = typeError (strErr "Invalid goal" ∷ termErr x ∷ [])
+-}
 
 --- Convenient wrappers ---
 
@@ -236,4 +350,3 @@ module Free where
   varsToMetas : List Meta → Term → Term
   varsToMetas = recTerm ∘ varToMetaRec
 open Free public
-

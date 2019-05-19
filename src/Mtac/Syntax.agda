@@ -3,6 +3,8 @@
 module Mtac.Syntax where
 
 open import Prelude
+open import Reflection.Extended
+
 open import Mtac.Core
 open import Mtac.Construct
 open import Mtac.Operation
@@ -24,7 +26,7 @@ Pbase-syntax  = Pbase
 syntax Pbase-syntax x b = x ⇒ b
 
 Ptele-syntax : {P : A → Set} → (C → Patt A P) → Patt A P
-Ptele-syntax  = Ptele
+Ptele-syntax {C = C} {P} = Ptele C  
 
 syntax Ptele-syntax (λ x → e) = x :> e
 
@@ -70,8 +72,8 @@ tauto2 P = do
     end
 
 sample : Term
-sample = quoteTerm (Ptele {P = λ (x : Set) → x} (λ p →
-   Ptele
+sample = quoteTerm (Ptele {P = λ (x : Set) → x} Set (λ p →
+   Ptele Set
    (λ q →
       Pbase (p × q)
       ((monad⇒applicative IApplicative.<*>

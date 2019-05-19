@@ -1,6 +1,8 @@
 module Mtac.Operation where
 
-open import Prelude hiding (getContext)
+open import Prelude 
+open import Reflection.Extended hiding (getContext)
+
 open import Mtac.Core
 
 isEvar : {A : Set ℓ} → A → ○ Bool

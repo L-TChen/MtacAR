@@ -1,4 +1,5 @@
 {-# OPTIONS --type-in-type #-}
+{-# OPTIONS --allow-unsolved-metas #-} 
 
 module Mtac.Construct where
 
@@ -10,7 +11,7 @@ open import Reflection.Extended
 -- EVar in Mtac
 
 evar : (A : Set) → ○ A
-evar A = ◎ inj₂ <$> (quoteTC A TC.>>= newMeta)
+evar A = ◎ inj₂ <$> (quoteTC A >>= newMeta)
 
 ------------------------------------------------------------------------
 -- Fixpoint operation for recursion
@@ -33,7 +34,7 @@ Patts A P n = Vec (Patt A P) (suc n)
 split : {P : A → Set} → Patt A P → TC (Term × Term)
 split pat = do
   data-type n _ ← getDefinition (quote Patt)
-    where t → print 5 (strErr "Impossible case reached:" ∷ termErr {!!} ∷ []) >> azero
+    where t → print 5 (strErr "Impossible case reached" ∷ []) >> azero
   (con id args) ← quoteTC pat
     where t → (print 20 $ strErr "Invalid pattern" ∷ termErr t ∷ []) >> azero
   go [] (con id (drop n args))
@@ -41,7 +42,7 @@ split pat = do
     go : Metas → Term → TC (Term × Term)
     go metas (con (quote Pbase) (vArg qLhs ∷ vArg qRhs ∷ []))       = {!drop !}
     go metas (con (quote Ptele) (vArg qC   ∷ vArg (vLam s t) ∷ [])) = {!!}
-    go _ _ = {!!}
+    go _ t = print 20 (strErr "Invalid pattern" ∷ termErr t ∷ []) >> azero
 ------------------------------------------------------------------------
 -- Check if the LHS is unifiable with qa
 patt1 = quoteTerm (Pbase {P = λ (x : Set) → x } ⊤ (return tt))
@@ -75,7 +76,7 @@ mmatchOne P qa pat = do
   
 mmatch : (P : ∀ A → Set) (a : A) → Patts A P n → ○ P a
 mmatch {A} P a patts =
-  (joinR $ quoteTC a TC.>>= go patts TC.>>= unquoteTC) <|> throw NoPatternMatched
+  (joinR $ quoteTC a >>= go patts >>= unquoteTC) <|> throw NoPatternMatched
   where
     go : Patts A P n → Term → TC Term
     go (x ∷ [])         qt = mmatchOne P qt x
