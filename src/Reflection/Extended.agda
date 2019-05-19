@@ -1,14 +1,12 @@
-{-
-  This module is partly from Ulf's agda-prelude, see https://github.com/UlfNorell/agda-prelude
--}
 {-# OPTIONS --without-K --safe #-}
-module Reflection.Extended where
 
 open import Prelude
 --open import Reflection.DeBruijn
 
+module Reflection.Extended where
+
 import Agda.Builtin.Reflection as Builtin
-open module TC = Builtin public
+open module TC = Builtin public 
   renaming ( left-assoc  to assocˡ
            ; right-assoc to assocʳ
            ; primQNameFixity to getFixity
@@ -54,16 +52,16 @@ pattern sortLit i = sort (lit i)
 
 instance
   NameEq : Eq Name
-  _==_ ⦃ NameEq ⦄ = Builtin.primQNameEquality
+  _==_ ⦃ NameEq ⦄ = TC.primQNameEquality
 
   NameShow : Show Name
-  show ⦃ NameShow ⦄ = Builtin.primShowQName
+  show ⦃ NameShow ⦄ = TC.primShowQName
 
   MetaEq : Eq Meta
-  _==_ ⦃ MetaEq ⦄ = Builtin.primMetaEquality
+  _==_ ⦃ MetaEq ⦄ = TC.primMetaEquality
 
   MetaShow : Show Meta
-  show ⦃ MetaShow ⦄ = Builtin.primShowMeta
+  show ⦃ MetaShow ⦄ = TC.primShowMeta
 
   LitShow : Show Literal
   show ⦃ LitShow ⦄ (nat n)    = show n
@@ -117,19 +115,18 @@ instance
     { azero = typeError []
     ; _<|>_ = catchTC
     }
-    
--- Shorthands for List A
-Types Metas Terms ErrorParts Names Clauses : Set
+
+Args : (A : Set) → Set
+Args A = List (Arg A)
+
+Types Metas Terms ErrorParts Names Clauses Cxt : Set
 Types      = List Type
 Metas      = List Meta
 Terms      = List Term
 ErrorParts = List ErrorPart
 Names   = List Name
 Clauses = List Clause
-
-Args : (A : Set) → Set
-Args A = List (Arg A)
-
+Cxt     = Args Type
 -- Every metaprogram / tactic is of type `Term → TC ⊤`
 Tactic : Set
 Tactic = Term → TC ⊤
@@ -146,16 +143,22 @@ visibility (argInfo v _) = v
 relevance : ArgInfo → Relevance
 relevance (argInfo _ r) = r
 
-unArg : {A : Set ℓ} → Arg A → A
+unArg : Arg A → A
 unArg (arg _ x) = x
 
-getArgInfo : {A : Set ℓ} → Arg A → ArgInfo
+getArgInfo : Arg A → ArgInfo
 getArgInfo (arg i _) = i
 
-unAbs : {A : Set ℓ} → Abs A → A
+getVisibility : Arg A → Visibility
+getVisibility = visibility ∘ getArgInfo
+
+getRelevance : Arg A → Relevance
+getRelevance = relevance ∘ getArgInfo
+
+unAbs : Abs A → A
 unAbs (abs _ x) = x
 
-isVisible : {A : Set ℓ} → Arg A → Bool
+isVisible : Arg A → Bool
 isVisible (arg (argInfo visible _) _) = true
 isVisible _ = false
 
@@ -166,7 +169,10 @@ give : Term → Tactic
 give v hole = unify hole v
 
 newMeta : Type → TC Term
-newMeta = checkType unknown
+newMeta `A = do
+  t ← checkType unknown `A
+  debugPrint "mtac" 20 $ strErr "New metavar" ∷ termErr t ∷ strErr ":" ∷ termErr `A ∷ []
+  return t
 
 newMeta! : TC Term
 newMeta! = newMeta unknown
@@ -182,6 +188,10 @@ infixr -20 _`$_
 _`$_ : Term → Term → Term
 _`$_ = def₂ (quote _$_)
 
+_`$$_ : Term → Terms → Term
+t `$$ [] = t
+t `$$ (x ∷ args) = (t `$ x) `$$ args
+
 _:′_ : Term → Type → TC Term
 _:′_ = checkType
 
@@ -190,7 +200,10 @@ _:′_ = checkType
 
 infix 2 _=′_
 _=′_ : Term → Term → TC ⊤
-_=′_ = unify
+x =′ y = do
+  debugPrint "mtac" 20 $ strErr "Unifying" ∷ termErr x ∷ strErr "with" ∷ termErr y ∷ []
+  unify x y
+  debugPrint "mtac" 20 $ strErr "Unification succeed" ∷ []
 
 evalTC : TC A → Tactic
 evalTC {A = A} c hole = do
@@ -222,6 +235,7 @@ blockOnMeta! x = TC.bindTC commitTC λ _ → blockOnMeta x
 
 inferNormalisedType : Term → TC Type
 inferNormalisedType t = withNormalisation true (inferType t)
+
 {-
 forceFun : Type → TC Type
 forceFun a = do
@@ -337,7 +351,8 @@ module Free where
   weakRec n = record idRec { Pvar = λ x args → var (n + x) args }
 
   varToMetaRec : Metas → Rec
-  varToMetaRec metaCxt = record idRec { Pvar = metaOrVar }
+  varToMetaRec metaCxt = record idRec
+    { Pvar = metaOrVar }
     where
       metaOrVar : ℕ → Args Term → Term
       metaOrVar n args with metaCxt !! n

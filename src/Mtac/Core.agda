@@ -26,21 +26,24 @@ open ○_ public
 infix 0 ◎_
 infix 0 ○_
 
+print : ℕ → ErrorParts → TC ⊤
+print n errs = debugPrint "mtac" n errs
+
 returnR : A → ○ A
 returnR a = ◎ quoteTC a >>= λ t → return (inj₂ t)
 
 quoteBind : (f : A → ○ B) → Exception ⊎ Term → TC (Exception ⊎ Term)
 quoteBind f (inj₁ err) = returnTC (inj₁ err)
-quoteBind f (inj₂ qa)  = bindTC (unquoteTC qa) (toTC ∘ f)
+quoteBind f (inj₂ qa)  = (unquoteTC qa >>= toTC ∘ f) << print 40 (termErr qa ∷ [])
 
 bindR : ○ A → (A → ○ B) → ○ B
-bindR (◎ ta) f = ◎ (ta >>= (quoteBind f))
+bindR (◎ ta) f = ◎ ta >>= (quoteBind f)
 
 joinR : TC (○ A) → ○ A
-joinR ma = ◎ (ma >>= (return ∘ toTC) >>= id)
+joinR ma = ◎ ma >>= (return ∘ toTC) >>= id
 
 fromTC : TC A → ○ A
-fromTC ma = ◎ (ma >>= λ a → quoteTC a >>= return ∘ inj₂)
+fromTC ma = ◎ ma >>= λ a → quoteTC a >>= return ∘ inj₂
 
 instance
   ○-Monad : Monad ○_
@@ -68,11 +71,8 @@ runTT : ○ A → Tactic
 runTT {A = A} (◎ ma) hole = do
   inj₂ `a ← ma   where (inj₁ err) → typeError [ strErr (showExcept err) ]
   `A ← quoteTC A
-  checkedHole ← checkType hole `A
+--  checkedHole ← checkType hole `A
   unify `a hole
   
 macro
   run  = runTT
-
-print : ℕ → ErrorParts → TC ⊤
-print n errs = debugPrint "mtac" n errs
