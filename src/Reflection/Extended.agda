@@ -171,7 +171,7 @@ give v hole = unify hole v
 newMeta : Type → TC Term
 newMeta `A = do
   t ← checkType unknown `A
-  debugPrint "mtac" 20 $ strErr "New metavar" ∷ termErr t ∷ strErr ":" ∷ termErr `A ∷ []
+  debugPrint "mtac" 50 $ strErr "New metavar" ∷ termErr t ∷ strErr ":" ∷ termErr `A ∷ []
   return t
 
 newMeta! : TC Term
@@ -188,6 +188,7 @@ infixr -20 _`$_
 _`$_ : Term → Term → Term
 _`$_ = def₂ (quote _$_)
 
+infixr -10 _`$$_
 _`$$_ : Term → Terms → Term
 t `$$ [] = t
 t `$$ (x ∷ args) = (t `$ x) `$$ args
@@ -201,9 +202,9 @@ _:′_ = checkType
 infix 2 _=′_
 _=′_ : Term → Term → TC ⊤
 x =′ y = do
-  debugPrint "mtac" 20 $ strErr "Unifying" ∷ termErr x ∷ strErr "with" ∷ termErr y ∷ []
-  unify x y
-  debugPrint "mtac" 20 $ strErr "Unification succeed" ∷ []
+  debugPrint "mtac" 50 $ strErr "Unifying" ∷ termErr x ∷ strErr "with" ∷ termErr y ∷ []
+  unify x y <|> (debugPrint "mtac" 50 (strErr "Failed" ∷ []) >> azero)
+  debugPrint "mtac" 50 $ strErr "Succeed!" ∷ []
 
 evalTC : TC A → Tactic
 evalTC {A = A} c hole = do

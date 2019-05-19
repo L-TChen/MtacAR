@@ -1,4 +1,4 @@
-{-# OPTIONS -v mtac:50 --type-in-type #-}
+{-# OPTIONS -v mtac:45 --type-in-type #-}
 
 module Mtac.Syntax where
 
@@ -13,9 +13,9 @@ infixl 0 mcase_of_
 infix  0 mmatch-syntax
 infixr 4 Ptele-syntax
 infixr 4 Pbase-syntax
-infixr 1 _∣_
-infixr 2 ∣_
-infix  2 _end
+infixr 2 _∣_
+infixr 1 ∣_
+infix  3 _end
 
 Pbase-syntax : {P : A → Set} (x : A) (px : ○ P x) → Patt P
 Pbase-syntax  = Pbase
@@ -40,21 +40,3 @@ x ∣ xs = x ∷ xs
 
 _end : A → Vec A 1
 x end = x ∷ []
-
-------------------------------------------------------------------------
--- Benchmark Example 1:
-{-# TERMINATING #-}
-tauto : (P : Set) → ○ P
-tauto P = do
-  mprint "\n--------------STARTING----------------"
-  mcase P of
-    ∣ ⊤                 ⇒ return tt
-    ∣ p :> q :> (p × q) ⇒ ⦇ tauto p , tauto q ⦈
-    ∣ p :> q :> (p ⊎ q) ⇒
-      try     (tauto p >>= return ∘ inj₁)
-      finally (tauto q >>= return ∘ inj₂)
-    ∣ p :> p            ⇒ throw NotFound
-    end
-
-_ : ⊥ ⊎ ⊥ ⊎ ⊤ × ⊤
-_ = {! run (tauto $ ⊥ ⊎ ⊥ ⊎ ⊤ × ⊤) !}

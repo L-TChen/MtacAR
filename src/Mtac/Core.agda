@@ -34,7 +34,7 @@ returnR a = ◎ quoteTC a >>= λ t → return (inj₂ t)
 
 quoteBind : (f : A → ○ B) → Exception ⊎ Term → TC (Exception ⊎ Term)
 quoteBind f (inj₁ err) = returnTC (inj₁ err)
-quoteBind f (inj₂ qa)  = (unquoteTC qa >>= toTC ∘ f) << print 40 (termErr qa ∷ [])
+quoteBind f (inj₂ qa)  = unquoteTC qa >>= toTC ∘ f
 
 bindR : ○ A → (A → ○ B) → ○ B
 bindR (◎ ta) f = ◎ ta >>= (quoteBind f)
@@ -71,8 +71,8 @@ runTT : ○ A → Tactic
 runTT {A = A} (◎ ma) hole = do
   inj₂ `a ← ma   where (inj₁ err) → typeError [ strErr (showExcept err) ]
   `A ← quoteTC A
---  checkedHole ← checkType hole `A
+  checkedHole ← checkType hole `A
   unify `a hole
-  
+
 macro
   run  = runTT
