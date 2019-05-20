@@ -12,13 +12,13 @@ tauto : (P : Set) → ○ P
 tauto P =
   try lookupContext P finally
     (mcase P of
-      ∣ [ ⊤ ]⇒ ` tt `
-      ∣ p ▻ q ▻ [ p × q ]⇒ ⦇ tauto p , tauto q ⦈
-      ∣ p ▻ q ▻ [ p ⊎ q ]⇒
+      ∣ ⊤ ⇒ ` tt `
+      ∣ p ∶ Set ▻ q ∶ Set ▻ (p × q) ⇒ ⦇ tauto p , tauto q ⦈
+      ∣ p ▻ q ▻ (p ⊎ q) ⇒
         try     ⦇ inj₁ (tauto p) ⦈
         finally ⦇ inj₂ (tauto q) ⦈
-      ∣ p ▻         [ p ]⇒ throw NotFound
+      ∣ p ∶ Set ▻ p ⇒ throw NotFound
       end)
 
-solve : ℕ → ℕ × ⊤ 
-solve n = run (tauto $ ℕ × ⊤ )
+--solve : ℕ → ℕ × ⊤ 
+--solve n = run (tauto $ ℕ × ⊤ )

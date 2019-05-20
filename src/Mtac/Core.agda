@@ -57,7 +57,7 @@ unquoteBind f t@(error x)   = return t
 bindR : ○ A → (A → ○ B) → ○ B
 bindR (◎ `a) f = ◎ `a >>= unquoteBind f
 
-joinTC○ : TC (○ A) → ○ A -- TC Tac
+joinTC○ : TC (○ A) → ○ A
 joinTC○ ma = ◎ ma >>= toTC
 
 liftTC : TC A → ○ A
