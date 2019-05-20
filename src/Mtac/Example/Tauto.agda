@@ -9,8 +9,7 @@ open import Mtac
 
 {-# TERMINATING #-}
 tauto : (P : Set) → ○ P
-tauto P = do
-  --mprint [ strErr "\n--------------STARTING----------------" ]
+tauto P =
   try lookupContext P finally
     (mcase P of
       ∣ [ ⊤ ]⇒ ` tt `
@@ -21,5 +20,5 @@ tauto P = do
       ∣ p ▻         [ p ]⇒ throw NotFound
       end)
 
-solve : ℕ → ℕ × ⊤
-solve n = {!run (tauto $ ℕ × ⊤ )!}
+solve : ℕ → ℕ × ⊤ 
+solve n = run (tauto $ ℕ × ⊤ )

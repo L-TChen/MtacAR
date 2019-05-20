@@ -2,7 +2,7 @@
 
 module Mtac.Core where
 
-open import Prelude hiding (_⟨_⟩_)
+open import Prelude.Core
 open import Reflection.Extended
 
 open import Mtac.Core.Exception public
@@ -57,8 +57,8 @@ unquoteBind f t@(error x)   = return t
 bindR : ○ A → (A → ○ B) → ○ B
 bindR (◎ `a) f = ◎ `a >>= unquoteBind f
 
-joinR : TC (○ A) → ○ A -- TC Tac
-joinR ma = ◎ ma >>= toTC
+joinTC○ : TC (○ A) → ○ A -- TC Tac
+joinTC○ ma = ◎ ma >>= toTC
 
 liftTC : TC A → ○ A
 liftTC ma = ◎ ma >>= quoteTC >>= return ∘ term

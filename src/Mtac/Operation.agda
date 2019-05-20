@@ -23,10 +23,7 @@ isEvar {A} a = ◎ do
 -- Dyns is a list of pairs (`A, `t) such that t : A. Due to level
 -- restriction, they are encoded as Term.
 private 
-  Dyns : Set
-  Dyns = List (Term × Term)
-
-  countFrom : ℕ → Args Type → Dyns
+  countFrom : ℕ → Args Type → List (Term × Term)
   countFrom n []                     = []
   countFrom n ((arg i `A) ∷ `AS) =
     (`A , var n []) ∷ countFrom (1 + n) `AS
@@ -41,4 +38,5 @@ lookupContext A = (◎ do
   `A  ← quoteTC A
   cxt ← countFrom 0 <$> getContext 
   asum (map {T = List} (check `A) cxt))
+  
   <|> throw NotFound

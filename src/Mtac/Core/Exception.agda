@@ -2,7 +2,7 @@
 
 module Mtac.Core.Exception where
 
-open import Prelude.Base
+open import Prelude.Core
 
 data Exception : Set where
   NotFound InvalidPattern EmptyClause NoPatternMatched NotImplemented : Exception
