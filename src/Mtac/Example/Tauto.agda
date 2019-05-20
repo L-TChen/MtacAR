@@ -10,18 +10,16 @@ open import Mtac
 {-# TERMINATING #-}
 tauto : (P : Set) → ○ P
 tauto P = do
-  mprint [ strErr "\n--------------STARTING----------------" ]
-  mcase P of
-    ∣ [ ⊤ ]⇒ return tt
-    ∣ p ▻ q ▻ [ p × q ]⇒ ⦇ tauto p , tauto q ⦈
-    ∣ p ▻ q ▻ [ p ⊎ q ]⇒
-      try     ⦇ inj₁ (tauto p) ⦈
-      finally ⦇ inj₂ (tauto q) ⦈
-    ∣ p ▻         [ p ]⇒ throw NotFound
-    end
+  --mprint [ strErr "\n--------------STARTING----------------" ]
+  try lookupContext P finally
+    (mcase P of
+      ∣ [ ⊤ ]⇒ ` tt `
+      ∣ p ▻ q ▻ [ p × q ]⇒ ⦇ tauto p , tauto q ⦈
+      ∣ p ▻ q ▻ [ p ⊎ q ]⇒
+        try     ⦇ inj₁ (tauto p) ⦈
+        finally ⦇ inj₂ (tauto q) ⦈
+      ∣ p ▻         [ p ]⇒ throw NotFound
+      end)
 
-prop1 : ○ ⊤ × (⊥ ⊎ ⊤)
-prop1 = tauto _
-
-solve-prop1 : ⊤ × (⊥ ⊎ ⊤)
-solve-prop1 = {!run (tauto $ ⊤ × ⊤)!}
+solve : ℕ → ℕ × ⊤
+solve n = {!run (tauto $ ℕ × ⊤ )!}

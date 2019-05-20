@@ -1,12 +1,9 @@
 module Mtac.Operation where
 
 open import Prelude 
-open import Reflection.Extended hiding (getContext)
+open import Reflection.Extended
 
 open import Mtac.Core
-
-getContext : ○ Args Type
-getContext = liftTC TC.getContext
 
 mdebugPrint : ℕ → ErrorParts → ○ ⊤
 mdebugPrint n = liftTC ∘ print n
@@ -21,3 +18,27 @@ isEvar : {A : Set ℓ} → A → ○ Bool
 isEvar {A} a = ◎ do
   (meta _ _) ← quoteTC a where _ → term <$> quoteTC false
   ⦇ term (quoteTC true) ⦈
+
+------------------------------------------------------------------------
+-- Dyns is a list of pairs (`A, `t) such that t : A. Due to level
+-- restriction, they are encoded as Term.
+private 
+  Dyns : Set
+  Dyns = List (Term × Term)
+
+  countFrom : ℕ → Args Type → Dyns
+  countFrom n []                     = []
+  countFrom n ((arg i `A) ∷ `AS) =
+    (`A , var n []) ∷ countFrom (1 + n) `AS
+
+  check : Term → Term × Term → TC Tac
+  check `A (`B , `b) = do
+    `A =′ `B
+    return $ term `b
+
+lookupContext : (A : Set ℓ) → ○ A
+lookupContext A = (◎ do
+  `A  ← quoteTC A
+  cxt ← countFrom 0 <$> getContext 
+  asum (map {T = List} (check `A) cxt))
+  <|> throw NotFound
