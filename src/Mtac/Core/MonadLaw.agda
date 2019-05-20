@@ -15,7 +15,7 @@ private
   
 --------------------------------------------------------------------------------
 -- TC is a monad
-  
+
 postulate
   identityTCˡ : {A : Set ℓ} {B : Set ℓ′} {a : A} {f : A → TC B}
     → bindTC (returnTC a) f ≡ f a
@@ -89,15 +89,15 @@ abstract
     where open ≡-Reasoning
   
   ○-identityˡ : {A : Set ℓ₁} {B : Set ℓ₂} (a : A) (f : A → ○ B)
-    → (◎ bindTC (bindTC (quoteTC a) (λ t → returnTC (inj₂ t))) (quoteBind f)) ≡ f a
+    → (◎ bindTC (bindTC (quoteTC a) (λ `a → returnTC (term `a))) (unquoteBind f)) ≡ f a
   ○-identityˡ {ℓ₁} {ℓ₂} {A} {B } a f = begin
     bindR (returnR a) f
       ≡⟨⟩
-    (◎ bindTC (bindTC (quoteTC a) (return ∘ inj₂)) (quoteBind f))
-      ≡⟨ cong ◎_ (assocTC (quoteTC a) (return ∘ inj₂) (quoteBind f)) ⟩
-    (◎ bindTC (quoteTC a) (λ x → bindTC (return (inj₂ x)) (quoteBind f)))
+    (◎ bindTC (bindTC (quoteTC a) (return ∘ term)) (unquoteBind f))
+      ≡⟨ cong ◎_ (assocTC (quoteTC a) (return ∘ term) (unquoteBind f)) ⟩
+    (◎ bindTC (quoteTC a) (λ x → bindTC (return (term x)) (unquoteBind f)))
       ≡⟨ cong ◎_ (cong (bindTC (quoteTC a)) (funext λ t → identityTCˡ)) ⟩
-    (◎ bindTC (quoteTC a) λ x → (quoteBind f) $ inj₂ x)
+    (◎ bindTC (quoteTC a) λ x → (unquoteBind f) $ term x)
       ≡⟨⟩
     (◎ bindTC (quoteTC a) λ x → bindTC (unquoteTC x) (toTC ∘ f))
       ≡⟨ cong ◎_ (sym (assocTC (quoteTC a) unquoteTC _)) ⟩
@@ -106,6 +106,15 @@ abstract
     (◎ toTC (f a))
       ≡⟨⟩ 
     f a ∎
+    where open ≡-Reasoning
+
+  ○-fail : ∀ {A : Set ℓ} {B : Set ℓ′} (f : A → ○ B) (msg : String) → (fail msg >>= f) ≡ fail msg
+  ○-fail f msg = cong ◎_ (begin
+    bindTC (returnTC (blocked msg)) (unquoteBind f)
+      ≡⟨ identityTCˡ ⟩
+    (unquoteBind f) (blocked msg)
+      ≡⟨⟩ 
+    returnTC (blocked msg) ∎)
     where open ≡-Reasoning
     
 postulate

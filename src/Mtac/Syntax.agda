@@ -1,4 +1,4 @@
-{-# OPTIONS -v mtac:45 --type-in-type #-}
+{-# OPTIONS -v mtac:45 --omega-in-omega #-}
 
 module Mtac.Syntax where
 
@@ -9,34 +9,32 @@ open import Mtac.Core
 open import Mtac.Pattern
 open import Mtac.Operation
 
-infixl 0 mcase_of_
-infix  0 mmatch-syntax
-infixr 4 Ptele-syntax
-infixr 4 Pbase-syntax
-infixr 2 _∣_
-infixr 1 ∣_
-infix  3 _end
-
-Pbase-syntax : {P : A → Set} (x : A) (px : ○ P x) → Patt P
+Pbase-syntax : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {P : A → Set ℓ₂} (x : A) (px : ○ P x) → Patt P
 Pbase-syntax  = Pbase
-syntax Pbase-syntax x b = x ⇒ b
 
-Ptele-syntax : {P : A → Set} → (C → Patt P) → Patt P
-Ptele-syntax {C = C} {P} = Ptele C  
+syntax Pbase-syntax x b = [ x ]⇒ b
 
-syntax Ptele-syntax (λ x → e) = x :> e
+Ptele-syntax : {P : A → Set ℓ} → (C → Patt P) → Patt P
+Ptele-syntax {C = C} = Ptele C
+
+syntax Ptele-syntax (λ x → e) = x ▻ e
 
 mmatch-syntax = mmatch
 syntax mmatch-syntax (λ x → τ) a pats = mcase a ∶ x ⇒ τ of pats
 
-mcase_of_ : {P : A → Set} (a : A) → Patts P n → ○ P a
+mcase_of_ : {ℓ : Level} {P : A → Set ℓ} (a : A) → Patts P (suc n) → ○ P a
 mcase_of_ {P = P} a xs = mmatch P a xs
+
+pattern _end pat = pat ∷ []
+pattern _∣_ x xs = x ∷ xs
 
 ∣_ : A → A
 ∣_ x = x
 
-_∣_ : A → Vec A n → Vec A (1 + n)
-x ∣ xs = x ∷ xs
-
-_end : A → Vec A 1
-x end = x ∷ []
+infixl 0 mcase_of_
+infix  0 mmatch-syntax
+infixr 1 ∣_
+infixr 2 _∣_  
+infix  3 _end
+infixr 5 Ptele-syntax
+infixr 5 Pbase-syntax

@@ -1,42 +1,52 @@
-{-# OPTIONS --type-in-type --without-K #-}
+{-# OPTIONS --omega-in-omega --without-K #-}
 
 module Mtac.Pattern where
 
 open import Prelude
-
 open import Reflection.Extended
-open import Mtac.Core 
 
-data Patt {A : Set} (P : A → Set) : Set where
-  Pbase : (x : A)   (px : ○ P x)     → Patt P
-  Ptele : (C : Set) (f : C → Patt P) → Patt P
+open import Mtac.Core
 
-Patts : (P : A → Set) → ℕ → Set
-Patts P n = Vec (Patt P) (suc n)
+------------------------------------------------------------------------
+-- A `Patt`ern is essentially a context with a pattern to match on the
+-- left hand side and a possible term to return on the right hand
+-- side. Setω is used to contain arbitrary type in any universe level.
 
--- 
-split : Term → TC (Term × Term)
-splitGo : DiffList Term → (Term → Term) → Term → TC (Term × Term)
+data Patt (P : A → Set ℓ) : Setω where
+  Pbase : (x : A)      (px : ○ P x)     → Patt P
+  Ptele : (C : Set ℓ′) (f : C → Patt P) → Patt P
 
-split  `pat = splitGo empty id `pat
-splitGo metaCxt conVars (con (quote Ptele) (_ ∷ _ ∷ vArg `C   ∷ vArg (vLam s t) ∷ [])) = do
-  x ← newMeta `C
-  splitGo (metaCxt ++ [ x ]) (conVars ∘ vLam s) t
-splitGo metaCxt conVars (con (quote Pbase) (_ ∷ _ ∷ vArg `lhs ∷ vArg `rhs ∷ [])) = do
-  let metas = toList $ -, metaCxt
-      `mlhs = conVars `lhs `$$ metas
-      `mrhs = conVars `rhs `$$ metas
-  return (`mlhs , `mrhs)
-splitGo _ _ t = print 50 (strErr "Invalid pattern" ∷ termErr t ∷ []) >> azero
+data Patts (P : A → Set ℓ) : ℕ → Setω where
+  []   : Patts P 0
+  _∷_  : Patt P → Patts P n → Patts P (suc n)
+
+------------------------------------------------------------------------
+-- `split` takes a pattern apart into LHS and RHS (see above).
+private
+  variable
+    P : A → Set ℓ
+
+split : Patt P → TC (Term × Term)
+split (Pbase x px) = ⦇ quoteTC x , quoteTC px ⦈ 
+split (Ptele C f)  = quoteTC C >>= newMeta >>= unquoteTC >>= λ x → split (f x)
+------------------------------------------------------------------------
+-- `mmatch` takes a list of patterns and return the RHS of the first
+-- matched pattern.
+
+match1 : Term → Patt P → TC Term
+match1 `a pat = do
+  `lhs , `rhs ← split pat
+  `a =′ `lhs
+  return `rhs
   
-mmatch : (P : ∀ A → Set) (a : A) → Patts P n → ○ P a
-mmatch P a patts =
-  (joinR $ asum (map mmatchOne patts) >>= unquoteTC) <|> throw NoPatternMatched
-  where
-    mmatchOne : Patt P → TC Term
-    mmatchOne pat = do 
-      `a   ← quoteTC a
-      `pat ← quoteTC pat
-      `lhs , `rhs ← split `pat
-      `lhs =′ `a
-      return `rhs
+matchMany : Term → Patts P (suc n) → TC Term
+matchMany `a (x ∷ [])            = match1 `a x
+matchMany `a (x ∷ patts@(_ ∷ _)) = match1 `a x <|> matchMany `a patts
+
+mmatch : (P : ∀ A → Set ℓ) (a : A) → Patts P (suc n) → ○ P a
+mmatch P a patts = joinR (do
+  `a   ← quoteTC a
+  `rhs ← matchMany `a patts
+  unquoteTC {A = ○ (P a)} `rhs)
+  
+  <|> throw NoPatternMatched
