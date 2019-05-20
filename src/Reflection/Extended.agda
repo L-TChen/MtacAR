@@ -1,9 +1,7 @@
 {-# OPTIONS --without-K --safe #-}
-
-open import Prelude
---open import Reflection.DeBruijn
-
 module Reflection.Extended where
+
+open import Prelude.Core
 
 import Agda.Builtin.Reflection as Builtin
 open module TC = Builtin public 
@@ -62,7 +60,7 @@ instance
 
   MetaShow : Show Meta
   show ⦃ MetaShow ⦄ = TC.primShowMeta
-
+{- -- it requires showNat 
   LitShow : Show Literal
   show ⦃ LitShow ⦄ (nat n)    = show n
   show ⦃ LitShow ⦄ (word64 n) = show n
@@ -71,7 +69,7 @@ instance
   show ⦃ LitShow ⦄ (string s) = show s
   show ⦃ LitShow ⦄ (name x)   = show x
   show ⦃ LitShow ⦄ (meta x)   = show x
-
+-}
   VisibilityShow : Show Visibility
   VisibilityShow = record
     { show = λ
@@ -220,10 +218,6 @@ macro
 
   evalT : TC A → Tactic
   evalT = evalTC
-  
-arity : Term → ℕ
-arity (Π[ _ ∶ _ ] b) = 1 + arity b
-arity _              = 0
 
 define : Arg Name → Type → List Clause → TC ⊤
 define f a cs = declareDef f a >> defineFun (unArg f) cs
@@ -236,22 +230,6 @@ blockOnMeta! x = TC.bindTC commitTC λ _ → blockOnMeta x
 
 inferNormalisedType : Term → TC Type
 inferNormalisedType t = withNormalisation true (inferType t)
-
-{-
-forceFun : Type → TC Type
-forceFun a = do
-  dom ← newMeta set!
-  rng ← newMeta set!
-  unify a (vΠ[ "_" ∶ dom ] weaken 1 rng) --  (Π dom `→ weaken 1 rng)
-  normalise a
-inferFunRange : Term → TC Type
-inferFunRange hole = unPi =<< forceFun =<< inferType hole where
-  unPi : Type → TC Type
-  unPi (pi _ (abs _ (meta x _))) = blockOnMeta! x
-  unPi (pi _ (abs _ b)) = maybe pure (typeError ( strErr "Must be applied in a non-dependent function position"
-                                           ∷ termErr b ∷ [])) $ strengthen 1 b
-  unPi x = typeError (strErr "Invalid goal" ∷ termErr x ∷ [])
--}
 
 --- Convenient wrappers ---
 
@@ -283,86 +261,3 @@ recordConstructor r =
   caseM getConstructors r of λ
   { (c ∷ []) → pure c
   ; _ → typeError $ strErr "Cannot get constructor of non-record type" ∷ nameErr r ∷ [] }
-
-module Free where
-  record Rec {A B C : Set} : Set where
-    field
-      Pvar : ℕ → Args A → A
-      Pcon : Name → Args A → A
-      Pdef : Name → Args A → A
-      Plam : Visibility → Abs A → A
-      Ppat-lam : List B → Args A → A
-      Ppi      : Arg A → Abs A → A
-      Psort : C → A
-      PsortSet : A → C
-      PsortLit : ℕ → C
-      PsortUnknown : C
-      Plit  : Literal → A
-      Pmeta : Meta → Args A → A
-      Punknown : A
-      Pclause : Args Pattern → A → B
-      PabsClause : Args Pattern → B -- where
-    mutual
-      recArg : Arg Term → Arg A
-      recArg (arg i x) = arg i (recTerm x)
-
-      recArgs : Args Term → List (Arg A)
-      recArgs [] = []
-      recArgs (t ∷ ts) = recArg t ∷ recArgs ts
-
-      recAbs : Abs Term → Abs A
-      recAbs (abs s t) = abs s (recTerm t)
-
-      recClause : Clause → B
-      recClause (clause ps t)      = Pclause ps (recTerm t)
-      recClause (absurd-clause ps) = PabsClause ps
-
-      recClauses : Clauses → List B
-      recClauses [] = []
-      recClauses (c ∷ cs) = recClause c ∷ recClauses cs
-
-      recSort : Sort → C
-      recSort (set t) = PsortSet (recTerm t)
-      recSort (lit n) = PsortLit n
-      recSort unknown = PsortUnknown
-
-      recTerm : Term → A
-      recTerm (var x args) = Pvar x (recArgs args)
-      recTerm (con c args) = Pcon c (recArgs args)
-      recTerm (def f args) = Pdef f (recArgs args)
-      recTerm (lam v t) = Plam v (recAbs t)
-      recTerm (pat-lam cs args) = Ppat-lam (recClauses cs) (recArgs args)
-      recTerm (pi a b) = Ppi (recArg a) (recAbs b)
-      recTerm (sort s) = Psort (recSort s)
-      recTerm (lit l) = Plit l
-      recTerm (meta x args) = Pmeta x (recArgs args)
-      recTerm unknown = Punknown
-  open Rec public
-    using (recTerm; recSort; recClauses)
-    
-  idRec : Rec
-  idRec = record
-    { Pvar = var ; Pcon = con ; Pdef = def ; Plam = lam ; Ppat-lam = pat-lam ; Ppi = pi
-    ; Psort = sort ; PsortSet = set ; PsortLit = lit ; PsortUnknown = unknown
-    ; Plit = lit ; Pmeta = meta ; Punknown = unknown
-    ; Pclause = clause
-    ; PabsClause = absurd-clause
-    }
-  weakRec : ℕ → Rec
-  weakRec n = record idRec { Pvar = λ x args → var (n + x) args }
-
-  varToMetaRec : Metas → Rec
-  varToMetaRec metaCxt = record idRec
-    { Pvar = metaOrVar }
-    where
-      metaOrVar : ℕ → Args Term → Term
-      metaOrVar n args with metaCxt !! n
-      ... | nothing = var n args
-      ... | just x  = meta x args
-  {-  
-  weaken : ℕ → Term → Term
-  weaken = recTerm ∘ weakRec
--}
-  varsToMetas : List Meta → Term → Term
-  varsToMetas = recTerm ∘ varToMetaRec
-open Free public
