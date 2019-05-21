@@ -3,10 +3,7 @@
 module Reflection.Free where
 
 open import Prelude.Core
---open import Agda.Builtin.Reflection as TC
 open import Reflection.Extended
---open import Agda.Builtin.List
---open import Agda.Builtin.Nat
 
 record TermRec {A B C : Set} : Set where
   field
