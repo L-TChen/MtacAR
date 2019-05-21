@@ -1,6 +1,6 @@
 module Mtac.Operation where
 
-open import Prelude 
+open import Prelude.Core 
 open import Reflection.Extended
 
 open import Mtac.Core
@@ -28,7 +28,7 @@ private
   countFrom n ((arg i `A) ∷ `AS) =
     (`A , var n []) ∷ countFrom (1 + n) `AS
 
-  check : Term → Term × Term → TC Tac
+  check : Term → (Term × Term) → TC Tac
   check `A (`B , `b) = do
     `A =′ `B
     return $ term `b
