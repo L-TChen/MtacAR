@@ -95,7 +95,7 @@ instance
       
   TCFunctor : Functor TC
   TCFunctor = TCA .functor
-
+{-
   FunctorArg : Functor Arg 
   _<$>_ ⦃ FunctorArg ⦄ f (arg i x) = arg i (f x)
 
@@ -107,7 +107,7 @@ instance
 
   TraversableAbs : Traversable Abs
   traverse ⦃ TraversableAbs ⦄ f (abs s x) = ⦇ (abs s) (f x) ⦈
-  
+-}  
   TCAlter : Alternative TC
   TCAlter = record
     { azero = typeError []
