@@ -46,28 +46,32 @@ macro
 print : ℕ → ErrorParts → TC ⊤
 print n errs = debugPrint "mtac" n errs
 
-returnR : A → ○ A
-returnR a = ◎ quoteTC a >>= λ t → return $ term t
+return○′ : A → TC Tac
+return○′ a = quoteTC a >>= return ∘ term
+
+return○ : A → ○ A
+return○ a = ◎ return○′ a
 
 unquoteBind : (f : A → ○ B) → Tac → TC Tac
 unquoteBind f (term `a)     = unquoteTC `a >>= toTC ∘ f 
 unquoteBind f b@(blocked _) = return b
 unquoteBind f t@(error x)   = return t
 
-bindR : ○ A → (A → ○ B) → ○ B
-bindR (◎ `a) f = ◎ `a >>= unquoteBind f
+bind○ : ○ A → (A → ○ B) → ○ B
+bind○ (◎ `a) f = ◎ `a >>= unquoteBind f
 
 joinTC○ : TC (○ A) → ○ A
 joinTC○ ma = ◎ ma >>= toTC
 
 liftTC : TC A → ○ A
-liftTC ma = ◎ ma >>= quoteTC >>= return ∘ term
+liftTC ma = ◎ ma >>= return○′ 
 
 instance
+-- Monad laws are proved in Mtac.Core.MonadLaw
   ○-Monad : Monad ○_
   ○-Monad = record
-    { return = returnR
-    ; _>>=_  = bindR }
+    { return = return○
+    ; _>>=_  = bind○ }
 
   ○-MonadErr : MonadError Exception ○_
   throw      ⦃ ○-MonadErr ⦄ err    = ◎ return (error err)
@@ -83,4 +87,7 @@ instance
   ○-Applicative = monad⇒applicative
 
   ○-Alternative : Alternative ○_
-  ○-Alternative = record { azero = ◎ typeError [] ; _<|>_ = λ { (◎ a) (◎ b) → ◎ a <|> b } }
+  ○-Alternative = record
+    { azero = ◎ typeError []
+    ; _<|>_ = λ { (◎ a) (◎ b) → ◎ a <|> b }
+    }

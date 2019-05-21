@@ -1,7 +1,7 @@
 --{-# OPTIONS --without-K #-}
 module Mtac.Core.MonadLaw where
 
-open import Prelude
+open import Prelude.Core
 
 open import Reflection.Extended
 open import Relation.Binary.PropositionalEquality hiding ([_])
@@ -91,7 +91,7 @@ abstract
   ○-identityˡ : {A : Set ℓ₁} {B : Set ℓ₂} (a : A) (f : A → ○ B)
     → (◎ bindTC (bindTC (quoteTC a) (λ `a → returnTC (term `a))) (unquoteBind f)) ≡ f a
   ○-identityˡ {ℓ₁} {ℓ₂} {A} {B } a f = begin
-    bindR (returnR a) f
+    bind○ (return○ a) f
       ≡⟨⟩
     (◎ bindTC (bindTC (quoteTC a) (return ∘ term)) (unquoteBind f))
       ≡⟨ cong ◎_ (assocTC (quoteTC a) (return ∘ term) (unquoteBind f)) ⟩
@@ -118,9 +118,9 @@ abstract
     where open ≡-Reasoning
     
 postulate
-  ○-identityʳ : (ma : ○ A) → (bindR ma returnR) ≡ ma
+  ○-identityʳ : (ma : ○ A) → (bind○ ma return○) ≡ ma
   ○-assoc : (ma : ○ A) (f : A → ○ B) (g : B → ○ C)
-    → bindR (bindR ma f) g ≡ bindR ma (λ x → bindR (f x) g)
+    → bind○ (bind○ ma f) g ≡ bind○ ma (λ x → bind○ (f x) g)
       
  {- 
   ○-identityʳ : {A : Set ℓ} (ma : ○ A) → (ma >>= return) ≡ ma
