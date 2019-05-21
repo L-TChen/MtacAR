@@ -1,12 +1,16 @@
+{-# OPTIONS --safe --without-K #-}
+
 module Reflection.Free where
 
-open import Agda.Builtin.Reflection as TC
-open import Agda.Builtin.List
-open import Agda.Builtin.Nat
+open import Prelude.Core
+--open import Agda.Builtin.Reflection as TC
+open import Reflection.Extended
+--open import Agda.Builtin.List
+--open import Agda.Builtin.Nat
 
-record Rec {A B C : Set} : Set where
+record TermRec {A B C : Set} : Set where
   field
-    Pvar : Nat → List (Arg A) → A
+    Pvar : ℕ → List (Arg A) → A
     Pcon : Name → List (Arg A) → A
     Pdef : Name → List (Arg A) → A
     Plam : Visibility → Abs A → A
@@ -14,7 +18,7 @@ record Rec {A B C : Set} : Set where
     Ppi      : Arg A → Abs A → A
     Psort : C → A
     PsortSet : A → C
-    PsortLit : Nat → C
+    PsortLit : ℕ → C
     PsortUnknown : C
     Plit  : Literal → A
     Pmeta : Meta → List (Arg A) → A
@@ -52,18 +56,38 @@ record Rec {A B C : Set} : Set where
     recTerm (lam v t) = Plam v (recAbs t)
     recTerm (pat-lam cs args) = Ppat-lam (recClauses cs) (recArgs args)
     recTerm (pi a b) = Ppi (recArg a) (recAbs b)
-    recTerm (agda-sort s) = Psort (recSort s)
+    recTerm (sort s) = Psort (recSort s)
     recTerm (lit l) = Plit l
     recTerm (meta x args) = Pmeta x (recArgs args)
     recTerm unknown = Punknown
-open Rec public
+open TermRec public
   using (recTerm; recSort; recClauses)
 
-idRec : Rec
+idRec : TermRec
 idRec = record
   { Pvar = var ; Pcon = con ; Pdef = def ; Plam = lam ; Ppat-lam = pat-lam ; Ppi = pi
-  ; Psort = agda-sort ; PsortSet = set ; PsortLit = lit ; PsortUnknown = unknown
+  ; Psort = sort ; PsortSet = set ; PsortLit = lit ; PsortUnknown = unknown
   ; Plit = lit ; Pmeta = meta ; Punknown = unknown
   ; Pclause = clause
   ; PabsClause = absurd-clause
   }
+
+anyTermRec : TermRec {Bool} {⊤} {⊤}
+anyTermRec = record
+  { Pvar = λ _ → any unArg 
+  ; Pcon = λ _ → any unArg
+  ; Pdef = λ _ → any unArg
+  ; Plam = λ _ → unAbs
+  ; Ppat-lam     = λ _ → any unArg 
+  ; Ppi          = λ { (arg _ b) (abs _ b') → b || b' }
+  ; Psort        = λ _ → false
+  ; PsortSet     = λ _ → _
+  ; PsortLit     = λ _ → _
+  ; PsortUnknown = _
+  ; Plit         = λ _ → false
+  ; Pmeta        = λ y xs → any unArg xs
+  ; Punknown     = false
+  ; Pclause      = λ _ _ → _
+  ; PabsClause   = λ _ → _
+  }
+

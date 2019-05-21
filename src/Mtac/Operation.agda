@@ -1,9 +1,10 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --safe --without-K #-}
 
 module Mtac.Operation where
 
 open import Prelude.Core
 open import Reflection.Extended
+open import Reflection.Free
 
 open import Mtac.Core
 
@@ -50,17 +51,19 @@ isMvar {A} a = liftTC $ quoteTC a >>= reduce >>= λ
   ; _          → return false
   }
 
--- how to report error message? 
+_hasMeta_ : Term → Meta → Bool
+t hasMeta x = recTerm
+  record anyTermRec { Pmeta = λ y xs → x == y || any unArg xs  } t
+
 nu : (A : Set ℓ) → (A → ○ B) → ○ B
-nu A f = ◎ quoteTC A >>= λ `A → extendContext (vArg `A ) do
-  x ← unquoteTC (var₀ 0)
-  (toTC $ f x)
-{-
-  `x@(meta id args) ← newMeta =<< quoteTC A
-    where _ → typeError $ strErr "Impossible case is reached" ∷ []
-  x   ← unquoteTC {A = A} `x
-  toTC $ f x
--}  
+nu A f = ◎ runSpeculative do
+  `a@(meta x args) ← newMeta =<< quoteTC A
+    where _ → typeError $ strErr "No meta variable is created." ∷ []
+  a        ← unquoteTC `a
+  term `fa ← toTC $ f a
+    where tac → return (tac , false)
+  return $ if `fa hasMeta x then (error StuckTerm) , true else (term `fa , false)
+  
 {-
 `λ : {P : A → Set ℓ} (x : A) → P x → ○ (∀ y → P y)
 `λ {A = A} {P} x t = {!!}

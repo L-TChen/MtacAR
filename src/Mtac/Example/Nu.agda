@@ -5,15 +5,15 @@ module Mtac.Example.Nu where
 open import Prelude.Core
 open import Mtac
 
-any : ○ A
-any {A = A} = ν x ∶ A ⇒ ⦇ x ⦈
+solveAny : ○ A
+solveAny {A = A} = ν x ∶ A ⇒ ⦇ x ⦈
 
 runAny : A
-runAny = {! run any !}
+runAny = {!run solveAny!}
 
-withoutNu : ℕ → ○ ℕ
-withoutNu = λ y → ν x ∶ ℕ ⇒ (try ⦇ x ⦈ finally ⦇ 42 ⦈)
+withoutNu : ○ ℕ
+withoutNu = ν x ∶ ℕ ⇒ (try lookupContext ℕ finally (return $ fst (x , 42)))
 
 runWithoutNu : ℕ → ℕ
-runWithoutNu n = run (withoutNu n) 
+runWithoutNu n = run withoutNu
 

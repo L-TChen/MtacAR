@@ -95,6 +95,7 @@ instance
       
   TCFunctor : Functor TC
   TCFunctor = TCA .functor
+
 {-
   FunctorArg : Functor Arg 
   _<$>_ ⦃ FunctorArg ⦄ f (arg i x) = arg i (f x)
