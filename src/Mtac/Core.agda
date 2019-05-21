@@ -41,10 +41,14 @@ runTT {A = A} (◎ ta) hole = do
 macro
   run  = runTT
 
---------------------------------------------------
+------------------------------------------------------------------------
+-- Print error message to Agda debug frame with debug id "mtac"
+-- See user manual for usage.
 
 print : ℕ → ErrorParts → TC ⊤
 print n errs = debugPrint "mtac" n errs
+
+--------------------------------------------------
 
 return○′ : A → TC Tac
 return○′ a = quoteTC a >>= return ∘ term

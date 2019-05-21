@@ -6,6 +6,7 @@ open import Prelude.Core
 
 data Exception : Set where
   NotFound InvalidPattern EmptyClause NoPatternMatched NotImplemented : Exception
+  StuckTerm : Exception
 
 instance
   ExceptShow : Show Exception
@@ -14,3 +15,4 @@ instance
   show ⦃ ExceptShow ⦄ EmptyClause      = "Empty Clause"
   show ⦃ ExceptShow ⦄ NoPatternMatched = "No Pattern Matched"
   show ⦃ ExceptShow ⦄ NotImplemented   = "Not Implemented"
+  show ⦃ ExceptShow ⦄ StuckTerm        = "Computation gets stucked"

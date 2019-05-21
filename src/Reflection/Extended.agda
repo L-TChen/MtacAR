@@ -175,8 +175,8 @@ newMeta `A = do
 newMeta! : TC Term
 newMeta! = newMeta unknown
 
-`λ : Term → Term
-`λ b = lam visible (abs "_" b)
+`lam : Term → Term
+`lam b = lam visible (abs "_" b)
 
 infixl 9 _`∘_
 _`∘_ : Term → Term → Term

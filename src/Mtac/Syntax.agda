@@ -9,6 +9,11 @@ open import Mtac.Core
 open import Mtac.Pattern
 open import Mtac.Operation
 
+------------------------------------------------------------------------
+-- Syntax of Mtac
+-- All of the following are subject to change.
+-- Any commnets or advices are welcome. 
+
 Pbase-syntax : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {P : A → Set ℓ₂} (x : A) (px : ○ P x) → Patt P
 Pbase-syntax  = Pbase
 
@@ -34,6 +39,11 @@ pattern _∣_ x xs = x ∷ xs
 
 ∣_ : A → A
 ∣_ x = x
+
+nu-syntax : (A : Set ℓ) → (A → ○ B) → ○ B
+nu-syntax {ℓ} = nu {ℓ}
+
+syntax nu-syntax A (λ x → e) = ν x ∶ A ⇒ e -- ?
 
 infixl 1 mcase_of_
 infix  1 mmatch-syntax
