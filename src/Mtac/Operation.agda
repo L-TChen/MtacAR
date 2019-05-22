@@ -59,9 +59,9 @@ nu : (A : Set ℓ) → (A → ○ B) → ○ B
 nu A f = ◎ runSpeculative do
   `a@(meta x args) ← newMeta =<< quoteTC A
     where _ → typeError $ strErr "No meta variable is created." ∷ []
-  a        ← unquoteTC `a
-  term `fa ← toTC $ f a
+  term `fa ← toTC ∘ f =<< unquoteTC `a
     where tac → return (tac , false)
+  `fa ← reduce `fa
   return $ if `fa hasMeta x then (error StuckTerm) , true else (term `fa , false)
   
 {-
