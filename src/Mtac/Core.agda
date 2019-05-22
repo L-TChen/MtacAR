@@ -37,7 +37,7 @@ runTT {A = A} (◎ ta) hole = do
 
   term `a ← ta
     where
-      error e     → typeError $ strErr "Uncaught exception:" ∷ toErrorPart e 
+      error e     → typeError $ strErr "Uncaught exception:" ∷ toErrorPart e
       blocked msg → typeError $ strErr "Tactic is blocked:"  ∷ strErr msg ∷ []
   `A ← quoteTC A
   unify `a hole

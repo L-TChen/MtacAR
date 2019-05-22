@@ -53,7 +53,7 @@ isMvar {A} a = liftTC $ quoteTC a >>= reduce >>= λ
 
 ------------------------------------------------------------------------
 -- name restriction operator ν x . t
--- 
+--
 
 _hasMeta_ : Term → Meta → Bool
 t hasMeta x = recTerm
@@ -74,9 +74,9 @@ nu {ℓ} A f = ◎ runSpeculative do
 -- to check if a varialbe x_i in the context x_n-1 ... x_i ... x_ 0 is free in t ,
 -- we first do lambda abstractions t' = λ x_{i-1} ... x_0 . t
 -- then compare t' with (λ x_i. t') x after whnf reduction for a new metavariable x.
--- Note that λ x . t is in whnf, so nothing but the substitution x for x_i is performed. 
+-- Note that λ x . t is in whnf, so nothing but the substitution x for x_i is performed.
 
-{-  
+{-
 _isFreshFor_ : ℕ → A → TC Bool
 n isFreshFor t = {!!}
 

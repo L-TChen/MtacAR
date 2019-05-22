@@ -7,11 +7,11 @@ open import Reflection.Extended
 
 data Exception : Set where
   InvalidPattern EmptyClause NoPatternMatched NotImplemented : Exception
-  NotFound : Exception 
+  NotFound : Exception
   StuckTerm : Term → Exception
 
-toErrorPart : Exception → ErrorParts 
-toErrorPart NotFound         = strErr "Not Proof Found" ∷ []  
+toErrorPart : Exception → ErrorParts
+toErrorPart NotFound         = strErr "Not Proof Found" ∷ []
 toErrorPart InvalidPattern   = strErr "Invalid Pattern" ∷ []
 toErrorPart EmptyClause      = strErr "Empty Clause" ∷ []
 toErrorPart NoPatternMatched = strErr "No Pattern Matched" ∷ []
