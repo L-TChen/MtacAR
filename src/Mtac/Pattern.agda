@@ -11,7 +11,7 @@ open import Mtac.Core
 -- A `Patt`ern is essentially a context with a pattern to match on the
 -- left hand side and a possible term to return on the right hand
 -- side. Setω is used to contain arbitrary type in any universe level.
-
+-- universe polymorphism
 data Patt (P : A → Set ℓ) : Setω where
   Pbase : (x : A)      (px : ○ P x)     → Patt P
   Ptele : (C : Set ℓ′) (f : C → Patt P) → Patt P
@@ -27,7 +27,7 @@ private
     P : A → Set ℓ
 
 split : Patt P → TC (Term × Term)
-split (Pbase x px) = ⦇ quoteTC x , quoteTC px ⦈ 
+split (Pbase x px) = ⦇ quoteTC x , quoteTC px ⦈
 split (Ptele C f)  = quoteTC C >>= newMeta >>= unquoteTC >>= λ x → split (f x)
 
 ------------------------------------------------------------------------
@@ -38,7 +38,7 @@ match1 `a pat = do
   `lhs , `rhs ← split pat
   `a =′ `lhs
   return `rhs
-  
+
 matchMany : Term → Patts P (suc n) → TC Term
 matchMany `a (x ∷ [])            = match1 `a x
 matchMany `a (x ∷ patts@(_ ∷ _)) = match1 `a x <|> matchMany `a patts
@@ -48,5 +48,5 @@ mmatch P a patts = joinTC○ (do
   `a   ← quoteTC a
   `rhs ← matchMany `a patts
   unquoteTC {A = ○ (P a)} `rhs)
-  
+
   <|> throw NoPatternMatched

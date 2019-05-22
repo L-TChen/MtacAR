@@ -71,11 +71,11 @@ idRec = record
 
 anyTermRec : TermRec {Bool} {⊤} {⊤}
 anyTermRec = record
-  { Pvar = λ _ → any unArg 
+  { Pvar = λ _ → any unArg
   ; Pcon = λ _ → any unArg
   ; Pdef = λ _ → any unArg
   ; Plam = λ _ → unAbs
-  ; Ppat-lam     = λ _ → any unArg 
+  ; Ppat-lam     = λ _ → any unArg
   ; Ppi          = λ { (arg _ b) (abs _ b') → b || b' }
   ; Psort        = λ _ → false
   ; PsortSet     = λ _ → _

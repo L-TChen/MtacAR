@@ -10,7 +10,7 @@ open import Mtac.Core.Exception public
 -- A monad for typed tactic programming in Agda
 
 data Tac       : Set
-record ○_ (A : Set ℓ) : Set ℓ 
+record ○_ (A : Set ℓ) : Set ℓ
 
 record ○_ A where
   constructor ◎_
@@ -23,18 +23,22 @@ infix 0 ○_
 
 data Tac where
   term    : (`a : Term)     → Tac
-  blocked : (msg : String)  → Tac  -- for testing only 
+  blocked : (msg : String)  → Tac  -- for testing only
   error   : (e : Exception) → Tac
-  
+
 ------------------------------------------------------------------------
 -- Run a typed tactic
 
 runTT : ○ A → Tactic
 runTT {A = A} (◎ ta) hole = do
+  `holeTy ← inferType hole
+  `A      ← quoteTC A
+  unify `holeTy `A          -- first make sure that hole's type is unifible with A.
+
   term `a ← ta
     where
-      error e     → typeError $ strErr "Uncaught exception:" ∷ strErr (show e) ∷ []
-      blocked msg → typeError $ strErr "Tactic is blocked:" ∷ strErr msg ∷ []
+      error e     → typeError $ strErr "Uncaught exception:" ∷ toErrorPart e 
+      blocked msg → typeError $ strErr "Tactic is blocked:"  ∷ strErr msg ∷ []
   `A ← quoteTC A
   unify `a hole
 
@@ -57,7 +61,7 @@ return○ : A → ○ A
 return○ a = ◎ return○′ a
 
 unquoteBind : (f : A → ○ B) → Tac → TC Tac
-unquoteBind f (term `a)     = unquoteTC `a >>= toTC ∘ f 
+unquoteBind f (term `a)     = unquoteTC `a >>= toTC ∘ f
 unquoteBind f b@(blocked _) = return b
 unquoteBind f t@(error x)   = return t
 
@@ -68,7 +72,7 @@ joinTC○ : TC (○ A) → ○ A
 joinTC○ ma = ◎ ma >>= toTC
 
 liftTC : TC A → ○ A
-liftTC ma = ◎ ma >>= return○′ 
+liftTC ma = ◎ ma >>= return○′
 
 instance
 -- Monad laws are proved in Mtac.Core.MonadLaw
@@ -86,7 +90,7 @@ instance
 
   ○-MonadFail : MonadFail ○_
   fail ⦃ ○-MonadFail ⦄ msg = ◎ return (blocked msg)
-    
+
   ○-Applicative : Applicative ○_
   ○-Applicative = monad⇒applicative
 

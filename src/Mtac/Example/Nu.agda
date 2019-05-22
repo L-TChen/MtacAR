@@ -11,9 +11,7 @@ solveAny {A = A} = ν x ∶ A ⇒ ⦇ x ⦈
 runAny : A
 runAny = {!run solveAny!}
 
-withoutNu : ○ ℕ
-withoutNu = ν x ∶ ℕ ⇒ (try lookupContext ℕ finally (return $ fst (x , 42)))
-
-runWithoutNu : ℕ → ℕ
-runWithoutNu n = run withoutNu
-
+NoNu : ℕ
+NoNu = Proof
+  try (ν x ∶ ℕ ⇒ return x) finally return 42
+  ∎

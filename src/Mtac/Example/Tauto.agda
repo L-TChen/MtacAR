@@ -8,17 +8,17 @@ open import Reflection.Extended
 open import Mtac
 
 {-# TERMINATING #-}
-tauto : (P : Set) → ○ P
-tauto P =
+propTauto : {P : Set} → ○ P
+propTauto {P = P} =
   try lookupContext P finally
     (mcase P of
-      ∣ ⊤ ⇒ ` tt `
-      ∣ p ∶ Set ▻ q ∶ Set ▻ (p × q) ⇒ ⦇ tauto p , tauto q ⦈
-      ∣ p ▻ q ▻ (p ⊎ q) ⇒
-        try     ⦇ inj₁ (tauto p) ⦈
-        finally ⦇ inj₂ (tauto q) ⦈
-      ∣ p ∶ Set ▻ p ⇒ throw NotFound
+      ∣ ⊤                           ⇒ ` tt `
+      ∣ p ∶ Set ▻ q ∶ Set ▻ (p × q) ⇒ ⦇ propTauto , propTauto  ⦈
+      ∣ p ▻ q ▻ (p ⊎ q)             ⇒
+        try     ⦇ inj₁ propTauto ⦈
+        finally ⦇ inj₂ propTauto ⦈
+      ∣ p ∶ Set ▻ p                 ⇒ throw NotFound
       end)
 
---solve : ℕ → ℕ × ⊤ 
---solve n = run (tauto $ ℕ × ⊤ )
+solve : ℕ → ℕ × ℕ × ℕ × ⊤ 
+solve n = {! Proof propTauto ∎ !}

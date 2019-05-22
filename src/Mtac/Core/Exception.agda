@@ -3,16 +3,17 @@
 module Mtac.Core.Exception where
 
 open import Prelude.Core
+open import Reflection.Extended
 
 data Exception : Set where
-  NotFound InvalidPattern EmptyClause NoPatternMatched NotImplemented : Exception
-  StuckTerm : Exception
+  InvalidPattern EmptyClause NoPatternMatched NotImplemented : Exception
+  NotFound : Exception 
+  StuckTerm : Term → Exception
 
-instance
-  ExceptShow : Show Exception
-  show ⦃ ExceptShow ⦄ NotFound         = "Not Found"
-  show ⦃ ExceptShow ⦄ InvalidPattern   = "Invalid Pattern"
-  show ⦃ ExceptShow ⦄ EmptyClause      = "Empty Clause"
-  show ⦃ ExceptShow ⦄ NoPatternMatched = "No Pattern Matched"
-  show ⦃ ExceptShow ⦄ NotImplemented   = "Not Implemented"
-  show ⦃ ExceptShow ⦄ StuckTerm        = "Computation gets stucked"
+toErrorPart : Exception → ErrorParts 
+toErrorPart NotFound         = strErr "Not Proof Found" ∷ []  
+toErrorPart InvalidPattern   = strErr "Invalid Pattern" ∷ []
+toErrorPart EmptyClause      = strErr "Empty Clause" ∷ []
+toErrorPart NoPatternMatched = strErr "No Pattern Matched" ∷ []
+toErrorPart NotImplemented   = strErr "Not Implemented" ∷ []
+toErrorPart (StuckTerm `x)   = strErr "Computation stucked on" ∷ termErr `x ∷ []

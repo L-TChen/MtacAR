@@ -4,7 +4,7 @@ module Reflection.Extended where
 open import Prelude.Core
 
 import Agda.Builtin.Reflection as Builtin
-open module TC = Builtin public 
+open module TC = Builtin public
   renaming ( left-assoc  to assocˡ
            ; right-assoc to assocʳ
            ; primQNameFixity to getFixity
@@ -60,7 +60,7 @@ instance
 
   MetaShow : Show Meta
   show ⦃ MetaShow ⦄ = TC.primShowMeta
-{- -- it requires showNat 
+{- -- it requires showNat
   LitShow : Show Literal
   show ⦃ LitShow ⦄ (nat n)    = show n
   show ⦃ LitShow ⦄ (word64 n) = show n
@@ -82,22 +82,22 @@ instance
     { show = λ
       { relevant   → "relevant"
       ; irrelevant → "irrelevant" } }
-      
+
   ArgInfoShow : Show ArgInfo
   show ⦃ ArgInfoShow ⦄ (argInfo v r) = show v ++ " " ++ show r ++ " arg"
-  
+
   TCM : Monad TC
-  return ⦃ TCM ⦄ = returnTC 
-  _>>=_  ⦃ TCM ⦄ = bindTC 
+  return ⦃ TCM ⦄ = returnTC
+  _>>=_  ⦃ TCM ⦄ = bindTC
 
   TCA : Applicative TC
   TCA = monad⇒applicative ⦃ TCM ⦄
-      
+
   TCFunctor : Functor TC
   TCFunctor = TCA .functor
 
 {-
-  FunctorArg : Functor Arg 
+  FunctorArg : Functor Arg
   _<$>_ ⦃ FunctorArg ⦄ f (arg i x) = arg i (f x)
 
   FunctorAbs : Functor Abs
@@ -108,7 +108,7 @@ instance
 
   TraversableAbs : Traversable Abs
   traverse ⦃ TraversableAbs ⦄ f (abs s x) = ⦇ (abs s) (f x) ⦈
--}  
+-}
   TCAlter : Alternative TC
   TCAlter = record
     { azero = typeError []

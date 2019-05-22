@@ -3,7 +3,7 @@
 module Mtac.Syntax where
 
 open import Prelude.Core
-open import Reflection.Extended 
+open import Reflection.Extended
 
 open import Mtac.Core
 open import Mtac.Pattern
@@ -12,7 +12,7 @@ open import Mtac.Operation
 ------------------------------------------------------------------------
 -- Syntax of Mtac
 -- All of the following are subject to change.
--- Any commnets or advices are welcome. 
+-- Any commnets or advices are welcome.
 
 Pbase-syntax : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {P : A → Set ℓ₂} (x : A) (px : ○ P x) → Patt P
 Pbase-syntax  = Pbase
@@ -45,10 +45,15 @@ nu-syntax {ℓ} = nu {ℓ}
 
 syntax nu-syntax A (λ x → e) = ν x ∶ A ⇒ e -- ?
 
+macro
+  Proof_∎ = runTT
+
+infix -100 Proof_∎
 infixl 1 mcase_of_
 infix  1 mmatch-syntax
+infixr 2 nu-syntax
 infixr 2 ∣_
-infixr 3 _∣_  
+infixr 3 _∣_
 infix  4 _end
 infixr 5 Ptele-syntax
 infixr 5 Ptele-syntax2
