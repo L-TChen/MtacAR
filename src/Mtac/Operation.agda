@@ -4,7 +4,6 @@ module Mtac.Operation where
 
 open import Prelude.Core
 open import Reflection.Extended
-open import Reflection.Free
 
 open import Mtac.Core
 

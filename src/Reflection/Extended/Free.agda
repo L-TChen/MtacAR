@@ -1,9 +1,17 @@
 {-# OPTIONS --safe --without-K #-}
 
-module Reflection.Free where
+module Reflection.Extended.Free where
 
 open import Prelude.Core
-open import Reflection.Extended
+open import Agda.Builtin.Reflection as Builtin
+  renaming ( left-assoc  to assocˡ
+           ; right-assoc to assocʳ
+           ; primQNameFixity to getFixity
+           ; arg-info to argInfo
+           ; agda-sort to sort
+           ; record-type to record′
+           ; data-cons   to constructor′
+           ; prim-fun    to primitive′ )
 
 record TermRec {A B C : Set} : Set where
   field
@@ -59,32 +67,3 @@ record TermRec {A B C : Set} : Set where
     recTerm unknown = Punknown
 open TermRec public
   using (recTerm; recSort; recClauses)
-
-idRec : TermRec
-idRec = record
-  { Pvar = var ; Pcon = con ; Pdef = def ; Plam = lam ; Ppat-lam = pat-lam ; Ppi = pi
-  ; Psort = sort ; PsortSet = set ; PsortLit = lit ; PsortUnknown = unknown
-  ; Plit = lit ; Pmeta = meta ; Punknown = unknown
-  ; Pclause = clause
-  ; PabsClause = absurd-clause
-  }
-
-anyTermRec : TermRec {Bool} {⊤} {⊤}
-anyTermRec = record
-  { Pvar = λ _ → any unArg
-  ; Pcon = λ _ → any unArg
-  ; Pdef = λ _ → any unArg
-  ; Plam = λ _ → unAbs
-  ; Ppat-lam     = λ _ → any unArg
-  ; Ppi          = λ { (arg _ b) (abs _ b') → b || b' }
-  ; Psort        = λ _ → false
-  ; PsortSet     = λ _ → _
-  ; PsortLit     = λ _ → _
-  ; PsortUnknown = _
-  ; Plit         = λ _ → false
-  ; Pmeta        = λ y xs → any unArg xs
-  ; Punknown     = false
-  ; Pclause      = λ _ _ → _
-  ; PabsClause   = λ _ → _
-  }
-

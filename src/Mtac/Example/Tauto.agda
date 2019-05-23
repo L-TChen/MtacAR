@@ -7,15 +7,17 @@ open import Mtac
 {-# TERMINATING #-}
 propTauto : (P : Set) → ○ P
 propTauto P =
-  try lookupContext P finally
+  try lookupContext P catch λ _ → 
     (mcase P of
-      ∣ ⊤                           ⇒ ` tt `
-      ∣ p ∶ Set ▻ q ∶ Set ▻ (p × q) ⇒ ⦇ propTauto p , propTauto q ⦈
-      ∣ p ▻ q ▻ (p ⊎ q)             ⇒
+      ∣ ⊤                             ⇒ return tt
+      ∣ p ▻ q ▻ (p × q)   ⇒ ⦇ propTauto p , propTauto q ⦈
+      ∣ p ▻ q ▻ (p ⊎ q)               ⇒
         try     ⦇ inj₁ (propTauto p) ⦈
         finally ⦇ inj₂ (propTauto q) ⦈
-      ∣ p ∶ Set ▻ p                 ⇒ throw NotFound
+      ∣ p ∶ Set ▻ p                   ⇒ throw NotFound
       end)
 
 solve : ℕ → ⊥ ⊎ ℕ × (⊤ ⊎ List ℕ) × ⊤
-solve n = Proof propTauto _ ∎
+solve n = Proof
+  propTauto _
+  ∎

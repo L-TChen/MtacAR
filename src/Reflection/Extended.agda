@@ -1,8 +1,9 @@
+-- Code inspired by or copied from Ulf Norell's agda-prelude https://github.com/UlfNorell/agda-prelude
+
 {-# OPTIONS --without-K --safe #-}
 module Reflection.Extended where
 
 open import Prelude.Core
-
 import Agda.Builtin.Reflection as Builtin
 open module TC = Builtin public
   renaming ( left-assoc  to assocˡ
@@ -13,6 +14,8 @@ open module TC = Builtin public
            ; record-type to record′
            ; data-cons   to constructor′
            ; prim-fun    to primitive′ )
+
+open import Reflection.Extended.Free public
 
 pattern vArg ty            = arg (argInfo visible relevant)   ty
 pattern hArg ty            = arg (argInfo hidden relevant)    ty
@@ -262,3 +265,35 @@ recordConstructor r =
   caseM getConstructors r of λ
   { (c ∷ []) → pure c
   ; _ → typeError $ strErr "Cannot get constructor of non-record type" ∷ nameErr r ∷ [] }
+
+------------------------------------------------------------------------
+-- Some common recursors 
+
+idRec : TermRec
+idRec = record
+  { Pvar = var ; Pcon = con ; Pdef = def ; Plam = lam ; Ppat-lam = pat-lam ; Ppi = pi
+  ; Psort = sort ; PsortSet = set ; PsortLit = lit ; PsortUnknown = unknown
+  ; Plit = lit ; Pmeta = meta ; Punknown = unknown
+  ; Pclause = clause
+  ; PabsClause = absurd-clause
+  }
+
+anyTermRec : TermRec {Bool} {⊤} {⊤}
+anyTermRec = record
+  { Pvar = λ _ → any unArg
+  ; Pcon = λ _ → any unArg
+  ; Pdef = λ _ → any unArg
+  ; Plam = λ _ → unAbs
+  ; Ppat-lam     = λ _ → any unArg
+  ; Ppi          = λ { (arg _ b) (abs _ b') → b || b' }
+  ; Psort        = λ _ → false
+  ; PsortSet     = λ _ → _
+  ; PsortLit     = λ _ → _
+  ; PsortUnknown = _
+  ; Plit         = λ _ → false
+  ; Pmeta        = λ y xs → any unArg xs
+  ; Punknown     = false
+  ; Pclause      = λ _ _ → _
+  ; PabsClause   = λ _ → _
+  }
+
