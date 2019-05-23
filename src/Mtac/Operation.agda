@@ -13,9 +13,6 @@ mdebugPrint n = liftTC ∘ print n
 mprint : ErrorParts → ○ ⊤
 mprint errs = mdebugPrint 2 errs
 
-`_` : A → ○ A
-`_` = return
-
 ------------------------------------------------------------------------
 -- Dyns is a list of pairs (`A, `t) such that t : A. Due to level
 -- restriction, they are encoded as Term.

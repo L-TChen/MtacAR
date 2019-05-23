@@ -17,7 +17,7 @@ open import Mtac.Operation
 Pbase-syntax : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {P : A → Set ℓ₂} (x : A) (px : ○ P x) → Patt P
 Pbase-syntax  = Pbase
 
-syntax Pbase-syntax x b = x ⇒ b
+syntax Pbase-syntax x b = [ x ]⇒ b
 
 Ptele-syntax : {P : A → Set ℓ} → (C → Patt P) → Patt P
 Ptele-syntax {C = C} = Ptele C
@@ -31,13 +31,13 @@ syntax Ptele-syntax2 C (λ x → e) = x ∶ C ▻ e
 mmatch-syntax = mmatch
 syntax mmatch-syntax (λ x → τ) a pats = mcase a ∶ x ⇒ τ of pats
 
-mcase_of_ : {ℓ : Level} {P : A → Set ℓ} (a : A) → Patts P (suc n) → ○ P a
+mcase_of_ : ∀ {ℓ} {P : A → Set ℓ} (a : A) → Patts P (suc n) → ○ P a
 mcase_of_ {P = P} a xs = mmatch P a xs
 
 pattern _end pat = pat ∷ []
 pattern _∣_ x xs = x ∷ xs
 
-∣_ : A → A
+∣_ : {A : Setω} → A → A
 ∣_ x = x
 
 nu-syntax : (A : Set ℓ) → (A → ○ B) → ○ B

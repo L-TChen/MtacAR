@@ -1,23 +1,23 @@
-{-# OPTIONS -v mtac:100 --type-in-type #-}
+{-# OPTIONS -v mtac:100 #-}
 module Mtac.Example.Tauto where
 open import Prelude
 open import Reflection.Extended
 open import Mtac
 
 {-# TERMINATING #-}
-propTauto : (P : Set) → ○ P
+propTauto : ∀ (P : Set) → ○ P
 propTauto P =
-  try lookupContext P catch λ _ → 
+  try lookupContext P catch λ _ →
     (mcase P of
-      ∣ ⊤                             ⇒ return tt
-      ∣ p ▻ q ▻ (p × q)   ⇒ ⦇ propTauto p , propTauto q ⦈
-      ∣ p ▻ q ▻ (p ⊎ q)               ⇒
+      ∣ [ ⊤ ]⇒ ⦇ tt ⦈
+      ∣ p ▻ q ▻ [ p × q ]⇒ ⦇ propTauto p , propTauto q ⦈
+      ∣ p ▻ q ▻ [ p ⊎ q ]⇒
         try     ⦇ inj₁ (propTauto p) ⦈
         finally ⦇ inj₂ (propTauto q) ⦈
-      ∣ p ∶ Set ▻ p                   ⇒ throw NotFound
-      end)
+      ∣ p ▻ [ p ]⇒ throw NotFound
+    end) 
 
-solve : ℕ → ⊥ ⊎ ℕ × (⊤ ⊎ List ℕ) × ⊤
-solve n = Proof
-  propTauto _
-  ∎
+-- solve : ℕ → ⊥ ⊎ ℕ × (⊤ ⊎ List ℕ) × ⊤
+-- solve n = Proof
+--   propTauto _
+--   ∎
