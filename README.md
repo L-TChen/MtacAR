@@ -1,4 +1,4 @@
-# MtacAR:<br/>*M*onadic typed *tac*tic programming via *A*gda's *R*eflection
+# MtacAR: Monadic typed tactic programming in Agda by Reflection
 
 Introduction
 ------------
@@ -6,14 +6,17 @@ Introduction
 Screenshots
 -----------
 
-<img width="600" alt="A simple propositional tautolgogy solver from [2]" src="https://user-images.githubusercontent.com/4060046/58277634-0ee38600-7d92-11e9-886e-3f17b7590874.png">
+<img width="600" alt="A simple tautolgogy solver from [2]"
+src="https://user-images.githubusercontent.com/4060046/59199092-07432000-8b8d-11e9-8c4a-6cb6eaad8644.png">
+
+Note that the above is a simple tautolgogy solver from [2], not `tauto` in Coq.
 
 Requirements
 ------------
 
-- Agda 2.6.0 
+- [Agda 2.6.1](https://github.com/agda/agda)
 - [Agda Standard Library](https://github.com/agda/agda-stdlib) v1.0 or above
-- [Prelude for Agda Standard Library](https://github.com/L-TChen/agda-stdlib-prelude)
+- [My Prelude](https://github.com/L-TChen/agda-lightweight-prelude)
 
 Usage
 -----
@@ -32,9 +35,8 @@ Ordered by relevance
 
 TO-DO
 -----
-- [ ] Lambda Abstraction in meta-level
-- [ ] Support backtracking
-- [ ] Investigate equations/axioms needed to allow shallow embedding of Mtac
-- [ ] Add more examples 
+- [ ] Support backward reasoning
+- [ ] Improve performance
+- [ ] Add more examples
 - [ ] Write a paper
 
