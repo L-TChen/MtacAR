@@ -94,6 +94,9 @@ instance
   ○-Applicative : Applicative ○_
   ○-Applicative = monad⇒applicative
 
+  ○-Functor : Functor ○_
+  ○-Functor = functor ○-Applicative
+
   ○-Alternative : Alternative ○_
   ○-Alternative = record
     { azero = ◎ typeError []

@@ -14,13 +14,11 @@ mprint : ErrorParts → ○ ⊤
 mprint errs = mdebugPrint 2 errs
 
 ------------------------------------------------------------------------
--- Dyns is a list of pairs (`A, `t) such that t : A. Due to level
--- restriction, they are encoded as Term.
 private
   countFrom : ℕ → Args Type → List (Term × Term)
-  countFrom n []                     = []
+  countFrom n []                 = []
   countFrom n ((arg i `A) ∷ `AS) =
-    (`A , var n []) ∷ countFrom (1 + n) `AS
+    (`A , var₀ n) ∷ countFrom (1 + n) `AS
 
   check : Term → (Term × Term) → TC Tac
   check `A (`B , `b) = do
@@ -46,24 +44,6 @@ isMvar {A} a = liftTC $ quoteTC a >>= reduce >>= λ
   { (meta _ _) → return true
   ; _          → return false
   }
-
-------------------------------------------------------------------------
--- name restriction operator ν x . t
---
-
-_hasMeta_ : Term → Meta → Bool
-t hasMeta x = recTerm
-  record anyTermRec { Pmeta = λ y xs → x == y || any unArg xs  } t
-
-nu : (A : Set ℓ) → (A → ○ B) → ○ B
-nu {ℓ} A f = ◎ runSpeculative do
-  `a@(meta x args) ← newMeta =<< quoteTC A
-    where _ → typeError $ strErr "No meta variable is created." ∷ []
-  term `fa ← toTC ∘ f =<< unquoteTC {ℓ} {A = A} `a
-    where tac → return (tac , false)
-  `fa ← reduce `fa
-  return $ if `fa hasMeta x then (error $ StuckTerm `fa) , false else (term `fa , false)
-
 
 ------------------------------------------------------------------------
 -- lambda abstraction λ x . t

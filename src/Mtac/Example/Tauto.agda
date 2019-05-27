@@ -19,4 +19,4 @@ propTauto P =
     end) 
 
 solve : ℕ → ⊤ → ⊥ ⊎ ℕ × (⊤ ⊎ List ℕ) × ⊤
-solve n tt = {! Proof propTauto _ ∎ !}
+solve n tt =  Proof propTauto _ ∎ 
