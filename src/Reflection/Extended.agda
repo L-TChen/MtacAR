@@ -98,7 +98,6 @@ instance
 
   TCFunctor : Functor TC
   TCFunctor = TCA .functor
-
 {-
   FunctorArg : Functor Arg
   _<$>_ ⦃ FunctorArg ⦄ f (arg i x) = arg i (f x)
@@ -126,9 +125,9 @@ Types      = List Type
 Metas      = List Meta
 Terms      = List Term
 ErrorParts = List ErrorPart
-Names   = List Name
-Clauses = List Clause
-Cxt     = Args Type
+Names      = List Name
+Clauses    = List Clause
+Cxt        = Args Type
 -- Every metaprogram / tactic is of type `Term → TC ⊤`
 Tactic : Set
 Tactic = Term → TC ⊤
@@ -269,31 +268,34 @@ recordConstructor r =
 ------------------------------------------------------------------------
 -- Some common recursors 
 
-idRec : TermRec
+idRec : TermRec {A → Term} {A → Clause} {A → Sort}
 idRec = record
-  { Pvar = var ; Pcon = con ; Pdef = def ; Plam = lam ; Ppat-lam = pat-lam ; Ppi = pi
-  ; Psort = sort ; PsortSet = set ; PsortLit = lit ; PsortUnknown = unknown
-  ; Plit = lit ; Pmeta = meta ; Punknown = unknown
-  ; Pclause = clause
-  ; PabsClause = absurd-clause
+  { Pvar = λ n args a  → var n  $ (λ { (arg i x) → arg i (x a) }) <$> args
+  ; Pcon = λ id args a → con id $ (λ { (arg i x) → arg i (x a) }) <$> args
+  ; Pdef = λ id args a → def id $ (λ { (arg i x) → arg i (x a) }) <$> args
+  ; Plam = λ {v (abs s t) a → lam v (abs s (t a)) }
+  ; Ppat-lam = λ cs args a → pat-lam ((_$ a) <$> cs) ((λ { (arg i x) → arg i (x a) }) <$> args)
+  ; Ppi      = λ { (arg i x) (abs s t) a → pi (arg i (x a)) (abs s (t a)) }
+  ; Psort    = λ { s a → sort (s a) }
+  ; PsortSet = λ t a → set (t a)
+  ; PsortLit = λ n _ → lit n
+  ; PsortUnknown = λ _ → unknown
+  ; Plit     = λ l a → lit l
+  ; Pmeta    = λ x args a → meta x ((λ { (arg i x) → arg i (x a) }) <$> args)
+  ; Punknown = λ _ → unknown
+  ; Pclause    = λ ps t a → ps ↦ t a
+  ; PabsClause = λ ps a → absurd-clause ps
   }
 
-anyTermRec : TermRec {Bool} {⊤} {⊤}
+anyTermRec : TermRec {A → Bool} {⊤} {⊤}
 anyTermRec = record
-  { Pvar = λ _ → any unArg
-  ; Pcon = λ _ → any unArg
-  ; Pdef = λ _ → any unArg
-  ; Plam = λ _ → unAbs
-  ; Ppat-lam     = λ _ → any unArg
-  ; Ppi          = λ { (arg _ b) (abs _ b') → b || b' }
-  ; Psort        = λ _ → false
-  ; PsortSet     = λ _ → _
-  ; PsortLit     = λ _ → _
-  ; PsortUnknown = _
-  ; Plit         = λ _ → false
-  ; Pmeta        = λ y xs → any unArg xs
-  ; Punknown     = false
-  ; Pclause      = λ _ _ → _
-  ; PabsClause   = λ _ → _
+  { Pvar     = λ _ args a → any ((_$ a) ∘ unArg) args
+  ; Pcon     = λ _ args a → any ((_$ a) ∘ unArg) args
+  ; Pdef     = λ _ args a → any ((_$ a) ∘ unArg) args 
+  ; Plam     = λ _ → unAbs ; Ppat-lam = λ _ args a → any ((_$ a) ∘ unArg) args
+  ; Ppi      = λ dom cod a → unArg dom a || unAbs cod a
+  ; Psort    = λ _ _ → false ; PsortSet = λ _ → _ ; PsortLit = λ _ → _ ; PsortUnknown = _
+  ; Plit         = λ _ _ → false
+  ; Pmeta        = λ _ args a → any ((_$ a) ∘ unArg) args ; Punknown     = λ _ → false
+  ; Pclause      = λ _ _ → _ ; PabsClause   = λ _ → _
   }
-

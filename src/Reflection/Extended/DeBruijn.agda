@@ -2,8 +2,10 @@
 
 module Reflection.Extended.DeBruijn where
 
-open import Prelude
-  renaming (ℕ to Nat)
+open import Prelude.Core
+open import Prelude.Maybe
+--open import Prelude.Vec
+
 open import Agda.Builtin.Reflection
   renaming ( left-assoc  to assocˡ
            ; right-assoc to assocʳ
@@ -16,24 +18,24 @@ open import Agda.Builtin.Reflection
 
 record DeBruijn {a} (A : Set a) : Set a where
   field
-    strengthenFrom : (from n : Nat) → A → Maybe A
-    weakenFrom     : (from n : Nat) → A → A
+    strengthenFrom : (from n : ℕ) → A → Maybe A
+    weakenFrom     : (from n : ℕ) → A → A
 
-  strengthen : Nat → A → Maybe A
+  strengthen : ℕ → A → Maybe A
   strengthen 0 = just
   strengthen n = strengthenFrom 0 n
 
-  weaken : Nat → A → A
+  weaken : ℕ → A → A
   weaken zero = id
   weaken n    = weakenFrom 0 n
 
 open DeBruijn {{...}} public
 
-patternBindings : List (Arg Pattern) → Nat
+patternBindings : List (Arg Pattern) → ℕ
 patternBindings = binds
   where
-    binds : List (Arg Pattern) → Nat
-    bind  : Pattern → Nat
+    binds : List (Arg Pattern) → ℕ
+    bind  : Pattern → ℕ
 
     binds []             = 0
     binds (arg _ a ∷ as) = bind a + binds as
@@ -47,9 +49,9 @@ patternBindings = binds
 
 private
   Str : Set → Set
-  Str A = Nat → Nat → A → Maybe A
+  Str A = ℕ → ℕ → A → Maybe A
 
-  strVar : Str Nat
+  strVar : Str ℕ
   strVar lo n x = if      x <? lo     then just x
                   else if x <? lo + n then nothing
                   else                just (x ∸ n)
@@ -92,9 +94,9 @@ private
 
 private
   Wk : Set → Set
-  Wk A = Nat → Nat → A → A
+  Wk A = ℕ → ℕ → A → A
 
-  wkVar : Wk Nat
+  wkVar : Wk ℕ
   wkVar lo k x = if x <? lo then x else x + k
 
   wkArgs    : Wk (List (Arg Term))
@@ -111,7 +113,7 @@ private
   wk lo k (meta x args) = meta x (wkArgs lo k args)
   wk lo k (lam v t)     = lam v (wkAbsTerm lo k t)
   wk lo k (pi a b)      = pi (wkArg lo k a) (wkAbsTerm lo k b)
-  wk lo k (sort s) = sort (wkSort lo k s)
+  wk lo k (sort s)      = sort (wkSort lo k s)
   wk lo k (lit l)       = lit l
   wk lo k (pat-lam cs args) = pat-lam (wkClauses lo k cs) (wkArgs lo k args)
   wk lo k unknown       = unknown
@@ -124,7 +126,7 @@ private
   wkSort    lo k (lit n)    = lit n
   wkSort    lo k unknown    = unknown
 
-  wkClauses lo k [] = []
+  wkClauses lo k []       = []
   wkClauses lo k (c ∷ cs) = wkClause lo k c ∷ wkClauses lo k cs
 
   wkClause lo k (clause ps b)      = clause ps (wk (lo + patternBindings ps) k b)
@@ -138,7 +140,7 @@ strengthenFrom {{DeBruijnTraversable}} lo k = traverse (strengthenFrom lo k)
 weakenFrom     {{DeBruijnTraversable}} lo k = map     (weakenFrom lo k)
 
 instance
-  DeBruijnNat : DeBruijn Nat
+  DeBruijnNat : DeBruijn ℕ
   strengthenFrom {{DeBruijnNat}} = strVar
   weakenFrom     {{DeBruijnNat}} = wkVar
 
@@ -148,10 +150,10 @@ instance
 
   DeBruijnList : ∀ {a} {A : Set a} {{_ : DeBruijn A}} → DeBruijn (List A)
   DeBruijnList = DeBruijnTraversable
-
-  DeBruijnVec : ∀ {a} {A : Set a} {{_ : DeBruijn A}} {n : Nat} → DeBruijn (Vec A n)
-  DeBruijnVec = DeBruijnTraversable
 {-
+  DeBruijnVec : ∀ {a} {A : Set a} {{_ : DeBruijn A}} {n : ℕ} → DeBruijn (Vec A n)
+  DeBruijnVec = DeBruijnTraversable
+
   DeBruijnArg : {A : Set} {{_ : DeBruijn A}} → DeBruijn (Arg A)
   DeBruijnArg = DeBruijnTraversable
 -}

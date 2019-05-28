@@ -12,14 +12,17 @@ open import Mtac.Core
 --
 
 _hasMeta_ : Term → Meta → Bool
-t hasMeta x = recTerm
-  record anyTermRec { Pmeta = λ y xs → x == y || any unArg xs  } t
+t hasMeta x = recTerm {⊤ → Bool} 
+  record anyTermRec { Pmeta = λ y bs _ → x == y || any ((_$ tt) ∘ unArg) bs } t _ 
 
 nu : (A : Set ℓ) → (A → ○ B) → ○ B
 nu {ℓ} A f = ◎ runSpeculative do
-  `a@(meta x args) ← newMeta =<< quoteTC A
-    where _ → typeError $ strErr "No meta variable is created." ∷ []
-  term `fa ← toTC ∘ f =<< unquoteTC {ℓ} {A = A} `a
+  `A ← quoteTC A
+  `a@(meta x args) ← newMeta `A
+    where _ → return (error (NoMeta `A) , false)
+    
+  term `fa ← toTC ∘ f =<< unquoteTC `a
     where tac → return (tac , false)
+    
   `fa ← reduce `fa
   return $ if `fa hasMeta x then (error $ StuckTerm `fa) , false else (term `fa , false)

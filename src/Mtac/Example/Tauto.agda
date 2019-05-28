@@ -2,21 +2,24 @@
 module Mtac.Example.Tauto where
 open import Prelude
 open import Reflection.Extended
+
 open import Mtac
 
 {-# TERMINATING #-}
-propTauto : (P : Set) → ○ P
-propTauto P =
+prop-tauto : (P : Set) → ○ P
+prop-tauto P =
   try lookupContext P
   finally
     (mcase P of
-      ∣ ⊤                           ⇒ ⦇ tt ⦈
-      ∣ p ∶ Set , q ∶ Set , (p × q) ⇒ ⦇ propTauto p , propTauto q ⦈
-      ∣ p ∶ Set , q ∶ Set , (p ⊎ q) ⇒
-        try      ⦇ inj₁ (propTauto _) ⦈
-        finally  ⦇ inj₂ (propTauto _) ⦈
-      ∣ p ∶ _ ,  p                  ⇒ throw NotFound
+      ∣ ⊤                       ⇒ ⦇ tt ⦈
+      ∣ p ∶ _ , q ∶ _ , p × q ⇒ ⦇ prop-tauto p , prop-tauto q ⦈
+      ∣ p ∶ _ , q ∶ _ , p ⊎ q ⇒
+        try      ⦇ inj₁ (prop-tauto _) ⦈
+        finally  ⦇ inj₂ (prop-tauto _) ⦈
+      ∣ p ∶ Set , q ∶ Set , (p → q) ⇒ ?
+      ∣ p ∶ _ ,  p              ⇒ throw NotFound
     end) 
-
-solve : ℕ → ⊤ → ⊥ ⊎ ℕ × (⊤ ⊎ List ℕ) × ⊤
-solve n tt =  Proof propTauto _ ∎ 
+{-
+solve : Set → ℕ → ⊤ → ⊥ ⊎ ℕ × (⊤ ⊎ List ℕ) × ⊤
+solve A n tt =  Proof prop-tauto _ ∎ 
+-}
