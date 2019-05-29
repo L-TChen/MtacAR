@@ -10,7 +10,7 @@ data Exception : Set where
   OutOfBound       : Term → Exception 
   NotVariable      : Term → Exception
   VariableNotFresh : Term → Exception 
-  StuckTerm        : Term → Exception
+  StuckTerm        : Exception
   NoMeta           : Type → Exception
 
 toErrorPart : Exception → ErrorParts
@@ -21,6 +21,6 @@ toErrorPart NoPatternMatched = strErr "No Pattern Matched" ∷ []
 toErrorPart NotImplemented   = strErr "Not Implemented" ∷ []
 toErrorPart (NotVariable `x) = strErr "Not a Variable" ∷ termErr `x ∷ []
 toErrorPart (OutOfBound `x)  = strErr "Out of Bound" ∷ termErr `x ∷ [] 
-toErrorPart (StuckTerm `x)   = strErr "Computation stucked on" ∷ termErr `x ∷ []
+toErrorPart StuckTerm        = strErr "The result contains a local name" ∷ []
 toErrorPart (VariableNotFresh `x) = strErr "Some variable in the context depends on" ∷ termErr `x ∷ []
 toErrorPart (NoMeta `A)      = strErr "Failed to create a metavariable for" ∷ termErr `A ∷ []

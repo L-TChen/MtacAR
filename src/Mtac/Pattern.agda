@@ -28,7 +28,8 @@ private
 
 split : Patt P → TC (Term × Term)
 split (Pbase x px) = ⦇ quoteTC x , quoteTC px ⦈
-split (Ptele C f)  = quoteTC C >>= newMeta >>= unquoteTC >>= λ x → split (f x)
+split (Ptele C f)  =
+  quoteTC C >>= newMeta >>= unquoteTC >>= λ x → split (f x)
 
 ------------------------------------------------------------------------
 -- `mmatch` takes a list of patterns and return the RHS of the first
@@ -48,5 +49,4 @@ mmatch P a patts = joinTC○ (do
   `a   ← quoteTC a
   `rhs ← matchMany `a patts
   unquoteTC {A = ○ (P a)} `rhs)
-
   <|> throw NoPatternMatched

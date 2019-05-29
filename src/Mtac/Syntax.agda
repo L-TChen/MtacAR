@@ -1,4 +1,4 @@
-{-# OPTIONS -v mtac:45 --without-K --omega-in-omega #-}
+{-# OPTIONS --without-K --omega-in-omega #-}
 
 ------------------------------------------------------------------------
 -- Syntax configuration: everything is subject to change.
@@ -10,10 +10,7 @@ open import Reflection.Extended
 
 open import Mtac.Core
 open import Mtac.Pattern
-open import Mtac.Nu
-open import Mtac.Abs
-
-
+open import Mtac.Binder
 
 Pbase-syntax : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {P : A → Set ℓ₂} (x : A) (px : ○ P x) → Patt P
 Pbase-syntax  = Pbase
@@ -38,14 +35,14 @@ pattern _∣_ x xs = x ∷ xs
 ∣_ x = x
 
 nu-syntax : (A : Set ℓ) → (A → ○ B) → ○ B
-nu-syntax {ℓ} = nu {ℓ}
+nu-syntax {ℓ} A = nu {ℓ} {A}
 
-syntax nu-syntax A (λ x → e) = ν x ∶ A ⇒ e -- ?
+syntax nu-syntax A (λ x → e) = ν x ∶ A ⇒ e
 
-abs-syntax : {P : A → Set ℓ} (x : A) → P x → ○ ((y : A) → P y)
-abs-syntax {ℓ} = mabs {ℓ}
+abs-syntax : {P : A → Set ℓ} (x : A) → ○ P x → ○ (∀ y → P y)
+abs-syntax x ○px = mabs x =<< ○px
 
-syntax abs-syntax {A = A} x e = ƛ x ∶ A ⇒ e
+syntax abs-syntax x ○px = ƛ x ⇒ ○px 
 
 macro
   Proof_∎ = runTT

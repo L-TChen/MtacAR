@@ -11,15 +11,17 @@ prop-tauto P =
   try lookupContext P
   finally
     (mcase P of
-      ∣ ⊤                       ⇒ ⦇ tt ⦈
-      ∣ p ∶ _ , q ∶ _ , p × q ⇒ ⦇ prop-tauto p , prop-tauto q ⦈
-      ∣ p ∶ _ , q ∶ _ , p ⊎ q ⇒
+      ∣ ⊤                     ⇒ ⦇ tt ⦈
+      ∣ P ∶ _ , Q ∶ _ , P × Q ⇒ ⦇ prop-tauto P , prop-tauto Q ⦈
+      ∣ P ∶ _ , Q ∶ _ , P ⊎ Q ⇒
         try      ⦇ inj₁ (prop-tauto _) ⦈
         finally  ⦇ inj₂ (prop-tauto _) ⦈
-      ∣ p ∶ Set , q ∶ Set , (p → q) ⇒ ?
-      ∣ p ∶ _ ,  p              ⇒ throw NotFound
+      ∣ A ∶ _ , P ∶ (A → Set) , (∀ x → P x) ⇒
+        (ν y ∶ A ⇒ ƛ y ⇒ prop-tauto (P y))
+      ∣ P ∶ Set ,  P              ⇒ throw NotFound
     end) 
 {-
-solve : Set → ℕ → ⊤ → ⊥ ⊎ ℕ × (⊤ ⊎ List ℕ) × ⊤
-solve A n tt =  Proof prop-tauto _ ∎ 
+solve : ⊤ × ⊤
+solve = run (prop-tauto _) 
+
 -}

@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --allow-unsolved-metas -v mtac:100 #-}
 
 module Mtac.Example.Nu where
 
@@ -15,3 +15,7 @@ NoNu : ℕ
 NoNu = Proof
   try (ν x ∶ ℕ ⇒ return x) finally return 42
   ∎
+
+Abs : ○ (ℕ → _)
+Abs = ν y ∶ ℕ ⇒ ƛ y ⇒ return y
+
