@@ -10,7 +10,7 @@ open import Reflection.Extended
 
 open import Mtac.Core
 open import Mtac.Pattern
-open import Mtac.Binder
+open import Mtac.Binders
 
 Pbase-syntax : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {P : A → Set ℓ₂} (x : A) (px : ○ P x) → Patt P
 Pbase-syntax  = Pbase

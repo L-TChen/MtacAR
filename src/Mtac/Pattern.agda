@@ -45,8 +45,6 @@ matchMany `a (x ∷ [])            = match1 `a x
 matchMany `a (x ∷ patts@(_ ∷ _)) = match1 `a x <|> matchMany `a patts
 
 mmatch : (P : ∀ A → Set ℓ) (a : A) → Patts P (suc n) → ○ P a
-mmatch P a patts = joinTC○ (do
-  `a   ← quoteTC a
-  `rhs ← matchMany `a patts
-  unquoteTC {A = ○ (P a)} `rhs)
-  <|> throw NoPatternMatched
+mmatch P a patts = joinTC○ do
+  `a ← quoteTC a
+  (unquoteTC =<< matchMany `a patts) <|> return (throw NoPatternMatched)

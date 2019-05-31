@@ -26,11 +26,10 @@ private
     return $ term `b
 
 lookupContext : (A : Set ℓ) → ○ A
-lookupContext A = (◎ do
+lookupContext A = ◎ do
   `A  ← quoteTC A
   cxt ← countFrom 0 <$> getContext
-  asum (map {T = List} (check `A) cxt))
-  <|> throw NotFound
+  asum (map {T = List} (check `A) cxt) <|> return (failure $ strErr "lookup context failed" ∷ [])
 
 ------------------------------------------------------------------------
 -- Declare a (meta)variable of the given type

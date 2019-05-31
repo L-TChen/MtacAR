@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K --safe -v mtac:100 #-}
 
-module Mtac.Binder where
+module Mtac.Binders where
 
 open import Prelude.Core
 open import Prelude.Maybe
