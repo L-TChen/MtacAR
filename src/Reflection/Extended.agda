@@ -175,6 +175,9 @@ newMeta `A = do
   debugPrint "mtac" 50 $ strErr "New metavar" ∷ termErr t ∷ strErr ":" ∷ termErr `A ∷ []
   return t
 
+quoteTC! : A → TC Term
+quoteTC! a = quoteTC a >>= reduce
+
 newMeta! : TC Term
 newMeta! = newMeta unknown
 

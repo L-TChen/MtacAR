@@ -62,6 +62,9 @@ unquoteBind f (term `a)     = unquoteTC `a >>= toTC ∘ f
 unquoteBind f b@(failure _) = return b
 unquoteBind f t@(error x)   = return t
 
+throw′ : Exception → TC Tac
+throw′ = return ∘ error
+
 bind○ : ○ A → (A → ○ B) → ○ B
 bind○ (◎ `a) f = ◎ `a >>= unquoteBind f
 

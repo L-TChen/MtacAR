@@ -1,4 +1,4 @@
-{-# OPTIONS -v mtac:100 #-}
+{-# OPTIONS -v mtac:100 --allow-unsolved-meta #-}
 module Mtac.Examples.Tauto where
 open import Prelude
 open import Reflection.Extended
@@ -15,9 +15,9 @@ prop-tauto P = lookupContext P
          ⦇ inj₁ (prop-tauto P) ⦈ <|> ⦇ inj₂ (prop-tauto Q) ⦈
        ∣ A ∶ _ , P ∶ (A → Set) , (∀ x → P x) ⇒
          (ν y ∶ A ⇒ ƛ y ⇒ prop-tauto (P y))
-       ∣ P ∶ Set ,  P              ⇒ azero
+       ∣ P ∶ Set ,  P              ⇒ fail "Only propositional tautology"
       end) 
-
-solve : ℕ → ℕ × ℕ  
-solve n = {!run (prop-tauto _)!} -- run (prop-tauto _) 
+      
+solve : ℕ → ℕ × ℕ × ⊤
+solve n = run (prop-tauto _)
 

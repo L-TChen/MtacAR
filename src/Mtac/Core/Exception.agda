@@ -14,12 +14,12 @@ data Exception : Set where
   NoMeta           : Type → Exception
 
 toErrorPart : Exception → ErrorParts
-toErrorPart InvalidPattern   = strErr "Invalid Pattern" ∷ []
-toErrorPart EmptyClause      = strErr "Empty Clause" ∷ []
-toErrorPart NoPatternMatched = strErr "No Pattern Matched" ∷ []
-toErrorPart NotImplemented   = strErr "Not Implemented" ∷ []
-toErrorPart (NotVariable `x) = strErr "Not a Variable" ∷ termErr `x ∷ []
-toErrorPart (OutOfBound `x)  = strErr "Out of Bound" ∷ termErr `x ∷ [] 
+toErrorPart InvalidPattern   = strErr "Invalid pattern" ∷ []
+toErrorPart EmptyClause      = strErr "Empty clause" ∷ []
+toErrorPart NoPatternMatched = strErr "No pattern matched" ∷ []
+toErrorPart NotImplemented   = strErr "Not implemented" ∷ []
+toErrorPart (NotVariable `x) = strErr "Not a variable" ∷ termErr `x ∷ []
+toErrorPart (OutOfBound `x)  = strErr "Out of bound" ∷ termErr `x ∷ [] 
 toErrorPart LocalName        = strErr "The result contains a local name" ∷ []
 toErrorPart (VariableNotFresh `x) = strErr "Some variable in the context depends on" ∷ termErr `x ∷ []
 toErrorPart (NoMeta `A)      = strErr "Failed to create a metavariable for" ∷ termErr `A ∷ []

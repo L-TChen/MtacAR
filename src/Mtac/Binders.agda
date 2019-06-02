@@ -18,7 +18,7 @@ _#_ : ℕ → Term → Bool
 n # t = not $ recTerm record anyTermRec
   { Pvar = λ i args n → i == n || any ((_$ n) ∘ unArg ) args
   ; Plam = λ _ t n    → unAbs t (suc n)
-  ; Ppi = λ ar t n    → unArg ar n || unAbs t (suc n)
+  ; Ppi  = λ ar t n   → unArg ar n || unAbs t (suc n)
   } t n
 
 _##_ : ℕ → Cxt → Bool
@@ -27,7 +27,6 @@ n ## (x ∷ Γ) = n # (unArg x) && (n ∸ 1) ## Γ
 
 ------------------------------------------------------------------------
 -- reset xₙ to xₘ 
--- 
 reset : ℕ → ℕ → Term → Term
 reset n m t = recTerm record idRec
   { Pvar = λ { i args (n , m) → let arg' = ((λ { (arg i x) → arg i (x (n , m)) }) <$> args) in
@@ -43,19 +42,16 @@ reset n m t = recTerm record idRec
 absVar : ℕ → Term → Term
 absVar n t = vLam "_" $ reset (suc n) 0 (weaken 1 t) 
 
-
 mabs : {P : A → Set ℓ} (x : A) → P x → ○ ((y : A) → P y)
-mabs x px = throw NotImplemented
-
-{-do
-  t@(var₀ i) ← liftTC $ reduce =<< quoteTC x
-    where t → throw (NotVariable t)
+mabs x px = ◎ do
+  var₀ i ← quoteTC! x
+    where t → throw′ (NotVariable t)
     
-  cxt    ← liftTC getContext
-  (guard $ (i ∸ 1) ## take i cxt) <|> throw (VariableNotFresh t)
-  
-  liftTC $ unquoteTC =<< (absVar i <$> quoteTC px)
--}
+  cxt ← getContext
+  if (i ∸ 1) ## take i cxt
+    then absVar i <$> quoteTC px >>= return ∘ term 
+    else throw′ (VariableNotFresh (var₀ i))
+
 ------------------------------------------------------------------------
 -- name restriction / local name : ν x . t
 
