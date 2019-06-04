@@ -13,6 +13,8 @@ data Tac : Set where
   error   : (e : Exception)            → Tac 
   -- other types of exceptions, e.g., no matched pattern, abstraction over a non-variable 
 
+-- the following deals with the universe levels.
+-- It is problematic if ○ A = TC Tac.
 record ○_ (A : Set ℓ) : Set ℓ where
   constructor ◎_
   field
@@ -32,9 +34,9 @@ runTT {A = A} (◎ ta) hole = do
   unify `holeTy `A          -- first make sure that hole's type is unifible with A.
 
   ta >>= λ where
-    (error e)        → typeError $ strErr "Uncaught exception:" ∷ toErrorPart e
+    (error e)       → typeError $ strErr "Uncaught exception:" ∷ toErrorPart e
     (failed tac `A) → typeError $ strErr "Fail to find" ∷ termErr `A ∷ strErr ("by " ++ tac) ∷ []
-    (term `a)        → unify `a hole
+    (term `a)       → unify `a hole
 
 macro
   run  = runTT
@@ -49,7 +51,7 @@ print n errs = debugPrint "mtac" n errs
 --------------------------------------------------
 
 return○′ : A → TC Tac
-return○′ a = quoteTC a >>= return ∘ term
+return○′ a = quoteTC a >>= return ∘ term 
 
 return○ : A → ○ A
 return○ = ◎_ ∘ return○′
@@ -95,4 +97,3 @@ instance
   _<|>_ ⦃ ○-Alternative ⦄ (◎ ta) (◎ tb) = ◎ ta >>= λ where
     (failed _ _) → tb 
     _            → ta
-    

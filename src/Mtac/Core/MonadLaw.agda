@@ -108,15 +108,15 @@ abstract
     f a ∎
     where open ≡-Reasoning
 
-  ○-fail : ∀ {A : Set ℓ} {B : Set ℓ′} (f : A → ○ B) (msg : String) → (fail msg >>= f) ≡ fail msg
-  ○-fail f msg = cong ◎_ (begin
-    bindTC (returnTC (blocked msg)) (unquoteBind f)
+  ○-empty : ∀ {A : Set ℓ} {B : Set ℓ′} (f : A → ○ B) → (empty >>= f) ≡ empty
+  ○-empty f = cong ◎_ (begin
+    bindTC (returnTC (failed "" unknown)) (unquoteBind f)
       ≡⟨ identityTCˡ ⟩
-    (unquoteBind f) (blocked msg)
-      ≡⟨⟩
-    returnTC (blocked msg) ∎)
+    (unquoteBind f) (failed "" unknown)
+      ≡⟨⟩ 
+    returnTC (failed "" unknown) ∎)
     where open ≡-Reasoning
-
+    
 postulate
   ○-identityʳ : (ma : ○ A) → (bind○ ma return○) ≡ ma
   ○-assoc : (ma : ○ A) (f : A → ○ B) (g : B → ○ C)

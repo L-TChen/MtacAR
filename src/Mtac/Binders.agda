@@ -39,24 +39,21 @@ absVar n t = vLam "_" $ reset (suc n) 0 (weaken 1 t)
 
 mabs : {P : A → Set ℓ} (x : A) → P x → ○ ((y : A) → P y)
 mabs x px = ◎ do
-  var₀ i ← quoteTC! x
+  `x@(var₀ i) ← quoteTC! x
     where t → throw′ (NotVariable t)
     
-  cxt ← getContext
-  if i ## cxt
-    then absVar i <$> quoteTC px >>= return ∘ term 
-    else throw′ (VariableNotFresh (var₀ i))
+  ⦇ if ⦇ (i ##_) getContext ⦈
+    then ⦇ (absVar i) (quoteTC px) ⦈ >>= return ∘ term
+    else throw′ (VariableNotFresh `x) ⦈ 
 
 -- name restriction / local name : ν x . t
 nu : (A → ○ B) → ○ B
-nu {A = A} f = throw NotImplemented
-
-{-joinTC○ do
-  `A ← quoteTC A
-  λ′ (vArg `A) do
+nu {A = A} f = joinTC○ do
+  `A ← vArg <$> quoteTC A
+  extendContext `A do
     a ← unquoteTC (var₀ 0)
-    term `fa ← toTC (f a)  where _ → return (f a)
+    term `fa ← toTC (f a)
+      where _ → return (f a)
     return $ if 0 # `fa
       then ◎ returnTC (term `fa)
-      else throw StuckTerm
--}
+      else throw LocalName

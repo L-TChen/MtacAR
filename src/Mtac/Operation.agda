@@ -14,6 +14,17 @@ mprint : ErrorParts → ○ ⊤
 mprint errs = mdebugPrint 2 errs
 
 ------------------------------------------------------------------------
+-- Declare a (meta)variable of the given type
+
+mvar : (A : Set ℓ) → ○ A
+mvar A = ◎ quoteTC A >>= newMeta >>= return ∘ term
+
+isMvar : {A : Set ℓ} → A → ○ Bool
+isMvar {A} a = liftTC $ quoteTC a >>= reduce >>= λ where
+  (meta _ _) → return true
+  _          → return false
+
+------------------------------------------------------------------------
 private
   countFrom : ℕ → Args Type → List (Term × Term)
   countFrom n []                 = []
@@ -25,19 +36,9 @@ private
     `A =′ `B
     return $ term `b
 
+lookup : (A : Set ℓ) → List (Term × Term) → ○ A
+lookup A cxt = ◎ quoteTC A >>= λ `A → 
+  asum (check `A <$> cxt) <|> return (failed "lookup" `A)
+  
 lookupContext : (A : Set ℓ) → ○ A
-lookupContext A = ◎ do
-  `A  ← quoteTC A
-  cxt ← countFrom 0 <$> getContext
-  asum (map {T = List} (check `A) cxt) <|> return (failed "lookupContext" `A)
-
-------------------------------------------------------------------------
--- Declare a (meta)variable of the given type
-
-mvar : (A : Set ℓ) → ○ A
-mvar A = ◎ quoteTC A >>= newMeta >>= return○′
-
-isMvar : {A : Set ℓ} → A → ○ Bool
-isMvar {A} a = liftTC $ quoteTC a >>= reduce >>= λ where
-  (meta _ _) → return true
-  _          → return false
+lookupContext A = (liftTC $ countFrom 0 <$> getContext) >>= lookup A

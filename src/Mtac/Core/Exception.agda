@@ -6,7 +6,7 @@ open import Prelude.Core
 open import Reflection.Extended
 
 data Exception : Set where
-  InvalidPattern EmptyClause NoPatternMatched NotImplemented : Exception
+  NoPatternMatched NotImplemented : Exception
   OutOfBound       : Term → Exception 
   NotVariable      : Term → Exception
   VariableNotFresh : Term → Exception 
@@ -14,8 +14,6 @@ data Exception : Set where
   NoMeta           : Type → Exception
 
 toErrorPart : Exception → ErrorParts
-toErrorPart InvalidPattern   = strErr "Invalid pattern" ∷ []
-toErrorPart EmptyClause      = strErr "Empty clause" ∷ []
 toErrorPart NoPatternMatched = strErr "No pattern matched" ∷ []
 toErrorPart NotImplemented   = strErr "Not implemented" ∷ []
 toErrorPart (NotVariable `x) = strErr "Not a variable" ∷ termErr `x ∷ []

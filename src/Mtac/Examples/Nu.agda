@@ -16,5 +16,5 @@ NoNu = Proof
   try (ν x ∶ ℕ ⇒ return x) finally return 42
   ∎
 
-Abs : ℕ → ○ (ℕ → ℕ)
-Abs y = ƛ y ⇒ return y
+Abs : ○ (ℕ → ℕ)
+Abs = ν y ∶ ℕ ⇒ ƛ y ⇒ ⦇ y ⦈
