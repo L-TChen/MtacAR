@@ -6,14 +6,10 @@ open import Prelude.Core
 open import Prelude.Maybe
 
 open import Reflection.Extended
-open import Reflection.Extended.DeBruijn
 
 open import Mtac.Core
 
-
-------------------------------------------------------------------------
 -- Check if a particular variable n : ℕ is used in a term.
-
 _#_ : ℕ → Term → Bool
 n # t = not $ recTerm record anyTermRec
   { Pvar = λ i args n → i == n || any ((_$ n) ∘ unArg ) args
@@ -22,10 +18,10 @@ n # t = not $ recTerm record anyTermRec
   } t n
 
 _##_ : ℕ → Cxt → Bool
-n ## []      = true
-n ## (x ∷ Γ) = n # (unArg x) && (n ∸ 1) ## Γ
+zero  ## Γ       = true
+suc n ## []      = true
+suc n ## (x ∷ Γ) = n # (unArg x) && n ## Γ
 
-------------------------------------------------------------------------
 -- reset xₙ to xₘ 
 reset : ℕ → ℕ → Term → Term
 reset n m t = recTerm record idRec
@@ -38,7 +34,6 @@ reset n m t = recTerm record idRec
     pi (arg i (dom (n , m))) (abs s (cod (1 + n , 1 + m))) }
   } t (n , m)
 
--- Pick a variable to abstract where freshness should be checked in advance 
 absVar : ℕ → Term → Term
 absVar n t = vLam "_" $ reset (suc n) 0 (weaken 1 t) 
 
@@ -48,13 +43,11 @@ mabs x px = ◎ do
     where t → throw′ (NotVariable t)
     
   cxt ← getContext
-  if (i ∸ 1) ## take i cxt
+  if i ## cxt
     then absVar i <$> quoteTC px >>= return ∘ term 
     else throw′ (VariableNotFresh (var₀ i))
 
-------------------------------------------------------------------------
 -- name restriction / local name : ν x . t
-
 nu : (A → ○ B) → ○ B
 nu {A = A} f = throw NotImplemented
 

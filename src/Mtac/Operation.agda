@@ -29,7 +29,7 @@ lookupContext : (A : Set ℓ) → ○ A
 lookupContext A = ◎ do
   `A  ← quoteTC A
   cxt ← countFrom 0 <$> getContext
-  asum (map {T = List} (check `A) cxt) <|> return (failure $ strErr "lookup context failed" ∷ [])
+  asum (map {T = List} (check `A) cxt) <|> return (failed "lookupContext" `A)
 
 ------------------------------------------------------------------------
 -- Declare a (meta)variable of the given type
@@ -38,7 +38,6 @@ mvar : (A : Set ℓ) → ○ A
 mvar A = ◎ quoteTC A >>= newMeta >>= return○′
 
 isMvar : {A : Set ℓ} → A → ○ Bool
-isMvar {A} a = liftTC $ quoteTC a >>= reduce >>= λ
-  { (meta _ _) → return true
-  ; _          → return false
-  }
+isMvar {A} a = liftTC $ quoteTC a >>= reduce >>= λ where
+  (meta _ _) → return true
+  _          → return false

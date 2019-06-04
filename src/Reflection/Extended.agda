@@ -15,7 +15,8 @@ open module TC = Builtin public
            ; data-cons   to constructor′
            ; prim-fun    to primitive′ )
 
-open import Reflection.Extended.Free public
+open import Reflection.Extended.Free     public
+open import Reflection.Extended.DeBruijn public
 
 pattern vArg ty            = arg (argInfo visible relevant)   ty
 pattern hArg ty            = arg (argInfo hidden relevant)    ty
@@ -63,7 +64,7 @@ instance
 
   MetaShow : Show Meta
   show ⦃ MetaShow ⦄ = TC.primShowMeta
-{- -- it requires showNat
+
   LitShow : Show Literal
   show ⦃ LitShow ⦄ (nat n)    = show n
   show ⦃ LitShow ⦄ (word64 n) = show n
@@ -72,7 +73,7 @@ instance
   show ⦃ LitShow ⦄ (string s) = show s
   show ⦃ LitShow ⦄ (name x)   = show x
   show ⦃ LitShow ⦄ (meta x)   = show x
--}
+
   VisibilityShow : Show Visibility
   VisibilityShow = record
     { show = λ
@@ -96,6 +97,11 @@ instance
   TCA : Applicative TC
   TCA = monad⇒applicative ⦃ TCM ⦄
 
+  TCAlter : Alternative TC
+  empty ⦃ TCAlter ⦄ = typeError []
+  _<|>_ ⦃ TCAlter ⦄ = catchTC
+  _∙_   ⦃ TCAlter ⦄ = λ _ _ → _
+
   TCFunctor : Functor TC
   TCFunctor = TCA .functor
 {-
@@ -111,11 +117,6 @@ instance
   TraversableAbs : Traversable Abs
   traverse ⦃ TraversableAbs ⦄ f (abs s x) = ⦇ (abs s) (f x) ⦈
 -}
-  TCAlter : Alternative TC
-  TCAlter = record
-    { azero = typeError []
-    ; _<|>_ = catchTC
-    }
 
 Args : (A : Set) → Set
 Args A = List (Arg A)
@@ -207,7 +208,7 @@ infix 2 _=′_
 _=′_ : Term → Term → TC ⊤
 x =′ y = do
   debugPrint "mtac" 50 $ strErr "Unifying" ∷ termErr x ∷ strErr "with" ∷ termErr y ∷ []
-  unify x y <|> (debugPrint "mtac" 50 (strErr "Failed" ∷ []) >> azero)
+  unify x y <|> (debugPrint "mtac" 50 (strErr "Failed" ∷ []) >> empty)
   debugPrint "mtac" 50 $ strErr "Succeed!" ∷ []
 
 evalTC : TC A → Tactic
