@@ -2,7 +2,7 @@
 
 module Reflection.Extended.Free where
 
-open import Prelude.Core
+open import Prelude
 open import Reflection.Extended.Base
 
 record TermRec {A B C : Set} : Set where
@@ -62,10 +62,10 @@ open TermRec public
 
 idRec : TermRec {A → Term} {A → Clause} {A → Sort}
 idRec = record
-  { Pvar = λ n args a  → var n  $ (λ { (arg i x) → arg i (x a) }) <$> args
-  ; Pcon = λ id args a → con id $ (λ { (arg i x) → arg i (x a) }) <$> args
-  ; Pdef = λ id args a → def id $ (λ { (arg i x) → arg i (x a) }) <$> args
-  ; Plam = λ {v (abs s t) a → lam v (abs s (t a)) }
+  { Pvar = λ n args a  → var n  $ map (a |>_) <$> args
+  ; Pcon = λ id args a → con id $ map (a |>_) <$> args
+  ; Pdef = λ id args a → def id $ map (a |>_) <$> args
+  ; Plam = λ {v t a → lam v ((a |>_) <$> t) }
   ; Ppat-lam = λ cs args a → pat-lam ((_$ a) <$> cs) ((λ { (arg i x) → arg i (x a) }) <$> args)
   ; Ppi      = λ { (arg i x) (abs s t) a → pi (arg i (x a)) (abs s (t a)) }
   ; Psort    = λ { s a → sort (s a) }

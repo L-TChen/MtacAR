@@ -2,7 +2,7 @@
 
 module Reflection.Extended.DeBruijn where
 
-open import Prelude.Core
+open import Prelude.Core hiding (bind)
 open import Reflection.Extended.Base
 
 record DeBruijn {a} (A : Set a) : Set a where

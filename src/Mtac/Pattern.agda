@@ -2,7 +2,7 @@
 
 module Mtac.Pattern where
 
-open import Prelude.Core
+open import Prelude
 open import Reflection.Extended
 
 open import Mtac.Core

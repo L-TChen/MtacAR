@@ -2,7 +2,7 @@
 
 module Mtac.Operation where
 
-open import Prelude.Core
+open import Prelude
 open import Reflection.Extended
 
 open import Mtac.Core
@@ -19,8 +19,8 @@ mprint errs = mdebugPrint 2 errs
 mvar : (A : Set ℓ) → ○ A
 mvar A = ◎ quoteTC A >>= newMeta >>= return ∘ term
 
-isMvar : {A : Set ℓ} → A → ○ Bool
-isMvar {A} a = liftTC $ quoteTC a >>= λ where
+isMvar : A → ○ Bool
+isMvar a = liftTC $ caseM (quoteTC a) of λ where
   (meta _ _) → return true
   _          → return false
 

@@ -1,7 +1,7 @@
 {-# OPTIONS -v mtac:100 --allow-unsolved-meta #-}
 module Mtac.Examples.Tauto where
 
-open import Prelude.Core
+open import Prelude
 open import Reflection.Extended
 
 open import Mtac
@@ -16,8 +16,11 @@ prop-tauto {P} = mcase P of
        (ν y ∶ A ⇒ ƛ y ⇒ prop-tauto)
      ∣ A ∶ Set , Q ∶ (A → Set) , Σ A Q ⇒ (do
        x ← mvar A
-       bind○ (prop-tauto {Q x})  λ r → ⦇ if (isMvar x) then ⦇⦈ else ⦇ (x , r) ⦈ ⦈ )
-     ∣ A ∶ _ , x ∶ A , x ≡ x ⇒ ⦇ (refl {x = x}) ⦈
+       bind ○_ (prop-tauto {Q x}) λ r → ⦇ if (isMvar x) then ⦇⦈ else ⦇ (x , r) ⦈ ⦈)
+     {-(do
+       x ← mvar A
+       _>>=_ {○_} (prop-tauto {Q x}) λ r → ⦇ if (isMvar x) then ⦇⦈ else ⦇ (x , r) ⦈ ⦈ )-}
+     ∣ A ∶ _ , x ∶ A , x ≡ x ⇒ ⦇ refl ⦈
      ∣ P ∶ _ , P             ⇒ lookupContext P
    end
 
@@ -26,5 +29,5 @@ solve = {!!} -- run prop-tauto
 
 
 f : Σ ℕ λ n → n ≡ 3
-f = run prop-tauto
+f = {!!} -- run prop-tauto
 

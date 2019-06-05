@@ -1,7 +1,7 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --overlapping-instances #-}
 module Mtac.Core.MonadLaw where
 
-open import Prelude.Core
+open import Prelude
 
 open import Reflection.Extended
 open import Relation.Binary.PropositionalEquality.Core
@@ -22,7 +22,7 @@ postulate
   identityTCʳ : {A : Set ℓ} {ma : TC A}
     → bindTC ma returnTC ≡ ma
   assocTC     : {A : Set ℓ₁} {B : Set ℓ₂} {C : Set ℓ₃} (ma : TC A) (f : A → TC B) (g : B → TC C)
-    → (ma >>= f >>= g) ≡ (ma >>= (λ x → f x >>= g))
+    → (ma >>= f >>= g) ≡ (ma >>= (λ x → f x >>= g)) -- why does it need --overlapping-instances?
 
 ○-pre : Set ℓ → Set
 ○-pre A = TC Term

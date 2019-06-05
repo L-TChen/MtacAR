@@ -2,7 +2,7 @@
 
 module Mtac.Core.Exception where
 
-open import Prelude.Core
+open import Prelude
 open import Reflection.Extended
 
 data Exception : Set where

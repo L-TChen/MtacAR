@@ -2,4 +2,4 @@ name: mtacAR
 include: 
   src
 depend: 
-  agda-stdlib-prelude
+  lightweight-prelude

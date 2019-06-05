@@ -2,7 +2,7 @@
 
 module Mtac.Examples.Nu where
 
-open import Prelude.Core
+open import Prelude
 open import Mtac
 
 solveAny : ○ A

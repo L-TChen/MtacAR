@@ -14,14 +14,20 @@ open module TC = Builtin public
            ; agda-sort to sort
            ; record-type to record′
            ; data-cons   to constructor′
-           ; prim-fun    to primitive′ )
+           ; prim-fun    to primitive′
+           ; instance′   to inst)
 
-pattern vArg ty            = arg (argInfo visible relevant)   ty
-pattern hArg ty            = arg (argInfo hidden relevant)    ty
-pattern iArg ty            = arg (argInfo instance′ relevant) ty
+pattern visible′           = argInfo visible   relevant
+pattern hidden′            = argInfo hidden    relevant
+pattern instance′          = argInfo inst      relevant 
+pattern vArg ty            = arg visible′  ty
+pattern hArg ty            = arg hidden′   ty
+pattern iArg ty            = arg instance′ ty
 pattern vLam s t           = lam visible   (abs s t)
 pattern hLam s t           = lam hidden    (abs s t)
-pattern iLam s t           = lam instance′ (abs s t)
+pattern iLam s t           = lam inst      (abs s t)
+pattern absurd-lam = pat-lam (absurd-clause (vArg absurd ∷ []) ∷ []) []
+
 pattern Π[_∶_]_  s a ty    = pi a (abs s ty)
 pattern vΠ[_∶_]_ s a ty    = Π[ s ∶ (vArg a) ] ty
 pattern hΠ[_∶_]_ s a ty    = Π[ s ∶ (hArg a) ] ty
@@ -50,19 +56,19 @@ infix 8 _↦_
 pattern sortSet t = sort (set t)
 pattern sortLit i = sort (lit i)
 
+pattern set₀ = sort (lit 0)
+pattern set₁ = sort (lit 1)
+pattern set! = sort unknown
+
 instance
   NameEq : Eq Name
   _==_ ⦃ NameEq ⦄ = TC.primQNameEquality
-
   NameShow : Show Name
   show ⦃ NameShow ⦄ = TC.primShowQName
-
   MetaEq : Eq Meta
   _==_ ⦃ MetaEq ⦄ = TC.primMetaEquality
-
   MetaShow : Show Meta
   show ⦃ MetaShow ⦄ = TC.primShowMeta
-
   LitShow : Show Literal
   show ⦃ LitShow ⦄ (nat n)    = show n
   show ⦃ LitShow ⦄ (word64 n) = show n
@@ -77,7 +83,7 @@ instance
     { show = λ
       { visible → "Explicit"
       ; hidden  → "Implicit"
-      ; instance′ → "Instance" } }
+      ; inst    → "Instance" } }
 
   RelevanceShow : Show Relevance
   RelevanceShow = record
@@ -91,30 +97,27 @@ instance
   TCM : Monad TC
   return ⦃ TCM ⦄ = returnTC
   _>>=_  ⦃ TCM ⦄ = bindTC
-
+  
   TCA : Applicative TC
   TCA = monad⇒applicative ⦃ TCM ⦄
-
+  
   TCAlter : Alternative TC
   empty ⦃ TCAlter ⦄ = typeError []
   _<|>_ ⦃ TCAlter ⦄ = catchTC
   _∙_   ⦃ TCAlter ⦄ = λ _ _ → _
-
+  
   TCFunctor : Functor TC
   TCFunctor = TCA .functor
 
   FunctorArg : Functor Arg
   _<$>_ ⦃ FunctorArg ⦄ f (arg i x) = arg i (f x)
-
   FunctorAbs : Functor Abs
   _<$>_ ⦃ FunctorAbs ⦄ f (abs s t) = abs s (f t)
 
   TraversableArg : Traversable Arg
   traverse ⦃ TraversableArg ⦄ f (arg i x) = ⦇ (arg i) (f x) ⦈
-
   TraversableAbs : Traversable Abs
   traverse ⦃ TraversableAbs ⦄ f (abs s x) = ⦇ (abs s) (f x) ⦈
-
 
 Args : (A : Set) → Set
 Args A = List (Arg A)
@@ -131,12 +134,6 @@ Cxt        = Args Type
 -- Every metaprogram / tactic is of type `Term → TC ⊤`
 Tactic : Set
 Tactic = Term → TC ⊤
-
-set₀ : Type
-set₀ = sort (lit 0)
-
-set! : Type
-set! = sort unknown
 
 visibility : ArgInfo → Visibility
 visibility (argInfo v _) = v
@@ -162,9 +159,6 @@ unAbs (abs _ x) = x
 isVisible : Arg A → Bool
 isVisible (arg (argInfo visible _) _) = true
 isVisible _ = false
-
-absurd-lam : Term
-absurd-lam = pat-lam (absurd-clause (vArg absurd ∷ []) ∷ []) []
 
 give : Term → Tactic
 give v hole = unify hole v
@@ -199,10 +193,10 @@ t `$$ (x ∷ args) = (t `$ x) `$$ args
 
 _:′_ : Term → Type → TC Term
 _:′_ = checkType
-
+{-
 λ′ : Arg Type → TC A → TC A
 λ′ = extendContext
-
+-}
 infix 2 _=′_
 _=′_ : Term → Term → TC ⊤
 x =′ y = do

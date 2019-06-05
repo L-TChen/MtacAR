@@ -2,7 +2,7 @@
 
 module Mtac.Binders where
 
-open import Prelude.Core
+open import Prelude
 open import Reflection.Extended
 
 open import Mtac.Core
@@ -22,14 +22,12 @@ suc n ## (x ∷ Γ) = n # (unArg x) && n ## Γ
 
 -- reset xₙ to xₘ 
 reset : ℕ → ℕ → Term → Term
-reset n m t = recTerm record idRec
-  { Pvar = λ { i args (n , m) → let arg' = ((λ { (arg i x) → arg i (x (n , m)) }) <$> args) in
-    if i == n
-      then var m arg'
-      else var i arg' }
-  ; Plam = λ { v (abs s t) (n , m) → lam v (abs s (t (1 + n , 1 + m))) } 
-  ; Ppi  = λ { (arg i dom) (abs s cod) (n , m) →
-    pi (arg i (dom (n , m))) (abs s (cod (1 + n , 1 + m))) }
+reset n m t = recTerm {A = ℕ × ℕ → Term} record idRec 
+  { Pvar = λ i args nm → if i == n
+      then var m (map (_$ nm) <$> args)
+      else var i (map (_$ nm) <$> args)
+  ; Plam = λ v t nm → lam v ((bimap suc suc nm |>_) <$> t)
+  ; Ppi  = λ dom cod nm → pi ((nm |>_) <$> dom) ((bimap suc suc nm |>_) <$> cod) 
   } t (n , m)
 
 absVar : ℕ → Term → Term

@@ -2,7 +2,7 @@
 
 module Mtac.Core.Base where 
 
-open import Prelude.Core
+open import Prelude
 open import Reflection.Extended
 
 open import Mtac.Core.Exception
@@ -33,7 +33,7 @@ runTT {A = A} (◎ ta) hole = do
   `A      ← quoteTC A
   unify `holeTy `A          -- first make sure that hole's type is unifible with A.
 
-  ta >>= λ where
+  caseM ta of λ where
     (error e)       → typeError $ strErr "Uncaught exception:" ∷ toErrorPart e
     (failed tac `A) → typeError $ strErr "Fail to find" ∷ termErr `A ∷ strErr ("by " ++ tac) ∷ []
     (term `a)       → unify hole `a
@@ -81,7 +81,7 @@ instance
 
   ○-MonadErr : MonadError Exception ○_
   throw      ⦃ ○-MonadErr ⦄ err      = ◎ return (error err)
-  try_catch_ ⦃ ○-MonadErr ⦄ (◎ ta) f = ◎ ta >>= λ where
+  try_catch_ ⦃ ○-MonadErr ⦄ (◎ ta) f = ◎ caseM ta of λ where
     (error e) → toTC $ f e
     tac       → return tac
 
@@ -94,6 +94,6 @@ instance
   ○-Alternative : Alternative ○_
   _∙_   ⦃ ○-Alternative ⦄ _ _ = _
   empty ⦃ ○-Alternative ⦄ = ◎ return (failed "" unknown)
-  _<|>_ ⦃ ○-Alternative ⦄ (◎ ta) (◎ tb) = ◎ ta >>= λ where
+  _<|>_ ⦃ ○-Alternative ⦄ (◎ ta) (◎ tb) = ◎ caseM ta of λ where
     (failed _ _) → tb 
     _            → ta
