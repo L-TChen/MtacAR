@@ -36,7 +36,7 @@ runTT {A = A} (◎ ta) hole = do
   ta >>= λ where
     (error e)       → typeError $ strErr "Uncaught exception:" ∷ toErrorPart e
     (failed tac `A) → typeError $ strErr "Fail to find" ∷ termErr `A ∷ strErr ("by " ++ tac) ∷ []
-    (term `a)       → unify `a hole
+    (term `a)       → unify hole `a
 
 macro
   run  = runTT

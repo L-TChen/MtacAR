@@ -3,15 +3,7 @@
 module Reflection.Extended.Free where
 
 open import Prelude.Core
-open import Agda.Builtin.Reflection as Builtin
-  renaming ( left-assoc  to assocˡ
-           ; right-assoc to assocʳ
-           ; primQNameFixity to getFixity
-           ; arg-info to argInfo
-           ; agda-sort to sort
-           ; record-type to record′
-           ; data-cons   to constructor′
-           ; prim-fun    to primitive′ )
+open import Reflection.Extended.Base
 
 record TermRec {A B C : Set} : Set where
   field
@@ -67,3 +59,35 @@ record TermRec {A B C : Set} : Set where
     recTerm unknown = Punknown
 open TermRec public
   using (recTerm; recSort; recClauses)
+
+idRec : TermRec {A → Term} {A → Clause} {A → Sort}
+idRec = record
+  { Pvar = λ n args a  → var n  $ (λ { (arg i x) → arg i (x a) }) <$> args
+  ; Pcon = λ id args a → con id $ (λ { (arg i x) → arg i (x a) }) <$> args
+  ; Pdef = λ id args a → def id $ (λ { (arg i x) → arg i (x a) }) <$> args
+  ; Plam = λ {v (abs s t) a → lam v (abs s (t a)) }
+  ; Ppat-lam = λ cs args a → pat-lam ((_$ a) <$> cs) ((λ { (arg i x) → arg i (x a) }) <$> args)
+  ; Ppi      = λ { (arg i x) (abs s t) a → pi (arg i (x a)) (abs s (t a)) }
+  ; Psort    = λ { s a → sort (s a) }
+  ; PsortSet = λ t a → set (t a)
+  ; PsortLit = λ n _ → lit n
+  ; PsortUnknown = λ _ → unknown
+  ; Plit     = λ l a → lit l
+  ; Pmeta    = λ x args a → meta x ((λ { (arg i x) → arg i (x a) }) <$> args)
+  ; Punknown = λ _ → unknown
+  ; Pclause    = λ ps t a → ps ↦ t a
+  ; PabsClause = λ ps a → absurd-clause ps
+  }
+
+anyTermRec : TermRec {A → Bool} {⊤} {⊤}
+anyTermRec = record
+  { Pvar     = λ _ args a → any ((_$ a) ∘ unArg) args
+  ; Pcon     = λ _ args a → any ((_$ a) ∘ unArg) args
+  ; Pdef     = λ _ args a → any ((_$ a) ∘ unArg) args 
+  ; Plam     = λ _ → unAbs ; Ppat-lam = λ _ args a → any ((_$ a) ∘ unArg) args
+  ; Ppi      = λ dom cod a → unArg dom a || unAbs cod a
+  ; Psort    = λ _ _ → false ; PsortSet = λ _ → _ ; PsortLit = λ _ → _ ; PsortUnknown = _
+  ; Plit         = λ _ _ → false
+  ; Pmeta        = λ _ args a → any ((_$ a) ∘ unArg) args ; Punknown     = λ _ → false
+  ; Pclause      = λ _ _ → _ ; PabsClause   = λ _ → _
+  }

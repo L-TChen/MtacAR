@@ -3,18 +3,7 @@
 module Reflection.Extended.DeBruijn where
 
 open import Prelude.Core
-open import Prelude.Maybe
---open import Prelude.Vec
-
-open import Agda.Builtin.Reflection
-  renaming ( left-assoc  to assocˡ
-           ; right-assoc to assocʳ
-           ; primQNameFixity to getFixity
-           ; arg-info to argInfo
-           ; agda-sort to sort
-           ; record-type to record′
-           ; data-cons   to constructor′
-           ; prim-fun    to primitive′ )
+open import Reflection.Extended.Base
 
 record DeBruijn {a} (A : Set a) : Set a where
   field
@@ -153,10 +142,10 @@ instance
 {-
   DeBruijnVec : ∀ {a} {A : Set a} {{_ : DeBruijn A}} {n : ℕ} → DeBruijn (Vec A n)
   DeBruijnVec = DeBruijnTraversable
-
+-}
   DeBruijnArg : {A : Set} {{_ : DeBruijn A}} → DeBruijn (Arg A)
   DeBruijnArg = DeBruijnTraversable
--}
+
   DeBruijnMaybe : {A : Set} {{_ : DeBruijn A}} → DeBruijn (Maybe A)
   DeBruijnMaybe = DeBruijnTraversable
 

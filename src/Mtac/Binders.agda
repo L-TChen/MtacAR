@@ -3,8 +3,6 @@
 module Mtac.Binders where
 
 open import Prelude.Core
-open import Prelude.Maybe
-
 open import Reflection.Extended
 
 open import Mtac.Core

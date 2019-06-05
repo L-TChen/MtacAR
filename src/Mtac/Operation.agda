@@ -20,16 +20,16 @@ mvar : (A : Set ℓ) → ○ A
 mvar A = ◎ quoteTC A >>= newMeta >>= return ∘ term
 
 isMvar : {A : Set ℓ} → A → ○ Bool
-isMvar {A} a = liftTC $ quoteTC a >>= reduce >>= λ where
+isMvar {A} a = liftTC $ quoteTC a >>= λ where
   (meta _ _) → return true
   _          → return false
 
 ------------------------------------------------------------------------
 private
-  countFrom : ℕ → Args Type → List (Term × Term)
-  countFrom n []                 = []
-  countFrom n ((arg i `A) ∷ `AS) =
-    (`A , var₀ n) ∷ countFrom (1 + n) `AS
+  from : ℕ → Args Type → List (Term × Term)
+  from n []                 = []
+  from n ((arg i `A) ∷ `AS) =
+    (`A , var₀ n) ∷ from (1 + n) `AS
 
   check : Term → (Term × Term) → TC Tac
   check `A (`B , `b) = do
@@ -41,4 +41,4 @@ lookup A cxt = ◎ quoteTC A >>= λ `A →
   asum (check `A <$> cxt) <|> return (failed "lookup" `A)
   
 lookupContext : (A : Set ℓ) → ○ A
-lookupContext A = (liftTC $ countFrom 0 <$> getContext) >>= lookup A
+lookupContext A = (liftTC $ from 0 <$> getContext) >>= lookup A
