@@ -25,7 +25,7 @@ prop-tauto {P} = mcase P of
    end
 
 solve : (n : ℕ) → ⊥ ⊎ ℕ × ⊤ × (n ≡ n)
-solve = {!!} -- run prop-tauto 
+solve = run prop-tauto 
 
 
 f : Σ ℕ λ n → n ≡ 3

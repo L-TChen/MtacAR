@@ -44,12 +44,9 @@ mabs x px = ◎ do
 
 -- name restriction / local name : ν x . t
 nu : (A → ○ B) → ○ B
-nu {A = A} f = joinTC○ do
-  `A ← vArg <$> quoteTC A
+nu {A = A} f = ◎ vArg <$> quoteTC A >>= λ `A → 
   extendContext `A do
     a ← unquoteTC (var₀ 0)
-    term `fa ← toTC (f a)
-      where _ → return (f a)
-    return $ if 0 # `fa
-      then ◎ returnTC (term `fa)
-      else throw LocalName
+    caseM toTC (f a) of λ where
+      (term `fa) → return $ if 0 # `fa then term `fa else error LocalName
+      tac        → return tac
