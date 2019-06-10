@@ -83,7 +83,7 @@ anyTermRec : TermRec {A → Bool} {⊤} {⊤}
 anyTermRec = record
   { Pvar     = λ _ args a → any ((_$ a) ∘ unArg) args
   ; Pcon     = λ _ args a → any ((_$ a) ∘ unArg) args
-  ; Pdef     = λ _ args a → any ((_$ a) ∘ unArg) args 
+  ; Pdef     = λ _ args a → any ((_$ a) ∘ unArg) args
   ; Plam     = λ _ → unAbs ; Ppat-lam = λ _ args a → any ((_$ a) ∘ unArg) args
   ; Ppi      = λ dom cod a → unArg dom a || unAbs cod a
   ; Psort    = λ _ _ → false ; PsortSet = λ _ → _ ; PsortLit = λ _ → _ ; PsortUnknown = _

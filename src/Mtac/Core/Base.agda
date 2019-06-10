@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K --safe #-}
 
-module Mtac.Core.Base where 
+module Mtac.Core.Base where
 
 open import Prelude
 open import Reflection.Extended
@@ -10,10 +10,10 @@ open import Mtac.Core.Exception
 data Tac : Set where
   term    : (`a : Term)                → Tac
   failed  : (tac : String) (`A : Type) → Tac
-  error   : (e : Exception)            → Tac 
-  -- other types of exceptions, e.g., no matched pattern, abstraction over a non-variable 
+  error   : (e : Exception)            → Tac
+  -- other types of exceptions, e.g., no matched pattern, abstraction over a non-variable
 
--- the following deals with the universe levels.
+-- ○ deals with the universe levels.
 -- It is problematic if ○ A = TC Tac.
 record ○_ (A : Set ℓ) : Set ℓ where
   constructor ◎_
@@ -31,7 +31,7 @@ runTT : ○ A → Tactic
 runTT {A = A} (◎ ta) hole = do
   `holeTy ← inferType hole
   `A      ← quoteTC A
-  unify `holeTy `A          -- first make sure that hole's type is unifible with A.
+  unify `holeTy `A          -- check if hole's type is unifible with A.
 
   caseM ta of λ where
     (error e)       → typeError $ strErr "Uncaught exception:" ∷ toErrorPart e
@@ -51,7 +51,7 @@ print n errs = debugPrint "mtac" n errs
 --------------------------------------------------
 
 return○′ : A → TC Tac
-return○′ a = quoteTC a >>= return ∘ term 
+return○′ a = quoteTC a >>= return ∘ term
 
 return○ : A → ○ A
 return○ = ◎_ ∘ return○′
@@ -82,11 +82,11 @@ instance
   ○-MonadErr : MonadError Exception ○_
   throw      ⦃ ○-MonadErr ⦄ err      = ◎ return (error err)
   try_catch_ ⦃ ○-MonadErr ⦄ (◎ ta) f = ◎ caseM ta of λ where
-    (error e) → toTC $ f e
+    (error e) → toTC (f e)
     tac       → return tac
 
   ○-Applicative : Applicative ○_
-  ○-Applicative = monad⇒applicative
+  ○-Applicative = monad⇒applicative {○_}
 
   ○-Functor : Functor ○_
   ○-Functor = functor ○-Applicative
@@ -95,5 +95,5 @@ instance
   _∙_   ⦃ ○-Alternative ⦄ _ _ = _
   empty ⦃ ○-Alternative ⦄ = ◎ return (failed "" unknown)
   _<|>_ ⦃ ○-Alternative ⦄ (◎ ta) (◎ tb) = ◎ caseM ta of λ where
-    (failed _ _) → tb 
+    (failed _ _) → tb
     _            → ta

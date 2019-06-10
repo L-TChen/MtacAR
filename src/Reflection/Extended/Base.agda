@@ -19,7 +19,7 @@ open module TC = Builtin public
 
 pattern visible′           = argInfo visible   relevant
 pattern hidden′            = argInfo hidden    relevant
-pattern instance′          = argInfo inst      relevant 
+pattern instance′          = argInfo inst      relevant
 pattern vArg ty            = arg visible′  ty
 pattern hArg ty            = arg hidden′   ty
 pattern iArg ty            = arg instance′ ty
@@ -97,15 +97,15 @@ instance
   TCM : Monad TC
   return ⦃ TCM ⦄ = returnTC
   _>>=_  ⦃ TCM ⦄ = bindTC
-  
+
   TCA : Applicative TC
   TCA = monad⇒applicative ⦃ TCM ⦄
-  
+
   TCAlter : Alternative TC
   empty ⦃ TCAlter ⦄ = typeError []
   _<|>_ ⦃ TCAlter ⦄ = catchTC
   _∙_   ⦃ TCAlter ⦄ = λ _ _ → _
-  
+
   TCFunctor : Functor TC
   TCFunctor = TCA .functor
 

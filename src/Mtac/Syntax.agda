@@ -42,7 +42,7 @@ syntax nu-syntax A (λ x → e) = ν x ∶ A ⇒ e
 abs-syntax : {P : A → Set ℓ} (x : A) → ○ P x → ○ (∀ y → P y)
 abs-syntax x ○px = mabs x =<< ○px
 
-syntax abs-syntax x ○px = ƛ x ⇒ ○px 
+syntax abs-syntax x ○px = ƛ x ⇒ ○px
 
 macro
   Proof_∎ = runTT

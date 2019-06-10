@@ -9,7 +9,7 @@ solveAny : ○ A
 solveAny {A = A} = ν x ∶ A ⇒ ⦇ x ⦈
 
 runAny : A
-runAny = {!run solveAny!}
+runAny = {!!}
 
 NoNu : ℕ
 NoNu = Proof
@@ -18,3 +18,4 @@ NoNu = Proof
 
 Abs : ○ (ℕ → ℕ)
 Abs = ν y ∶ ℕ ⇒ ƛ y ⇒ ⦇ y ⦈
+

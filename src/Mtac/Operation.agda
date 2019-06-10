@@ -11,7 +11,7 @@ mdebugPrint : ℕ → ErrorParts → ○ ⊤
 mdebugPrint n = liftTC ∘ print n
 
 mprint : ErrorParts → ○ ⊤
-mprint errs = mdebugPrint 2 errs
+mprint errs = mdebugPrint 10 errs
 
 ------------------------------------------------------------------------
 -- Declare a (meta)variable of the given type
@@ -20,9 +20,9 @@ mvar : (A : Set ℓ) → ○ A
 mvar A = ◎ quoteTC A >>= newMeta >>= return ∘ term
 
 isMvar : A → ○ Bool
-isMvar a = liftTC $ caseM (quoteTC a) of λ where
-  (meta _ _) → return true
-  _          → return false
+isMvar a = liftTC $ caseM quoteTC a of λ where
+    (meta x args) → return true
+    _             → return false
 
 ------------------------------------------------------------------------
 private
@@ -37,8 +37,8 @@ private
     return $ term `b
 
 lookup : (A : Set ℓ) → List (Term × Term) → ○ A
-lookup A cxt = ◎ quoteTC A >>= λ `A → 
+lookup A cxt = ◎ quoteTC A >>= λ `A →
   asum (check `A <$> cxt) <|> return (failed "lookup" `A)
-  
+
 lookupContext : (A : Set ℓ) → ○ A
 lookupContext A = (liftTC $ from 0 <$> getContext) >>= lookup A

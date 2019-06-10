@@ -1,4 +1,4 @@
-{-# OPTIONS -v mtac:100 --allow-unsolved-meta #-}
+{-# OPTIONS -v mtac:100 --allow-unsolved-meta  #-}
 module Mtac.Examples.Tauto where
 
 open import Prelude
@@ -6,28 +6,23 @@ open import Reflection.Extended
 
 open import Mtac
 
+
+-- A simple first-order tautology prover.
+
 {-# TERMINATING #-}
-prop-tauto : {P : Set} → ○ P
-prop-tauto {P} = mcase P of
+tauto : {P : Set} → ○ P
+tauto {P} = mcase P of
      ∣ ⊤                     ⇒ ⦇ tt ⦈
-     ∣ P ∶ _ , Q ∶ _ , P × Q ⇒ ⦇ prop-tauto , prop-tauto ⦈
-     ∣ P ∶ _ , Q ∶ _ , P ⊎ Q ⇒ ⦇ inj₁ prop-tauto | inj₂ prop-tauto ⦈
-     ∣ A ∶ _ , P ∶ (A → Set) , (∀ a → P a) ⇒
-       (ν y ∶ A ⇒ ƛ y ⇒ prop-tauto)
+     ∣ P ∶ _ , Q ∶ _ , P × Q ⇒ ⦇ tauto , tauto ⦈
+     ∣ P ∶ _ , Q ∶ _ , P ⊎ Q ⇒ ⦇ inj₁ tauto | inj₂ tauto ⦈
+     ∣ A ∶ _ , P ∶ (A → Set) , (∀ a → P a) ⇒ (ν y ∶ A ⇒ ƛ y ⇒ tauto)
      ∣ A ∶ Set , Q ∶ (A → Set) , Σ A Q ⇒ (do
        x ← mvar A
-       bind ○_ (prop-tauto {Q x}) λ r → ⦇ if (isMvar x) then ⦇⦈ else ⦇ (x , r) ⦈ ⦈)
-     {-(do
-       x ← mvar A
-       _>>=_ {○_} (prop-tauto {Q x}) λ r → ⦇ if (isMvar x) then ⦇⦈ else ⦇ (x , r) ⦈ ⦈ )-}
+       bind ○_ (tauto {Q x}) λ r →
+         ifM (isMvar x) then ⦇⦈ else ⦇ (x , r) ⦈)
      ∣ A ∶ _ , x ∶ A , x ≡ x ⇒ ⦇ refl ⦈
-     ∣ P ∶ _ , P             ⇒ lookupContext P
+     ∣ P ∶ _ , P             ⇒ lookupContext _
    end
 
-solve : (n : ℕ) → ⊥ ⊎ ℕ × ⊤ × (n ≡ n)
-solve = run prop-tauto 
-
-
-f : Σ ℕ λ n → n ≡ 3
-f = {!!} -- run prop-tauto
-
+solve : (n : ℕ) → ⊥ ⊎ ⊤ × (n ≡ n) × (Σ _ λ n → n ≡ 0)
+solve = run tauto

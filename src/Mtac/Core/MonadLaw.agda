@@ -113,10 +113,10 @@ abstract
     bindTC (returnTC (failed "" unknown)) (unquoteBind f)
       ≡⟨ identityTCˡ ⟩
     (unquoteBind f) (failed "" unknown)
-      ≡⟨⟩ 
+      ≡⟨⟩
     returnTC (failed "" unknown) ∎)
     where open ≡-Reasoning
-    
+
 postulate
   ○-identityʳ : (ma : ○ A) → (bind○ ma return○) ≡ ma
   ○-assoc : (ma : ○ A) (f : A → ○ B) (g : B → ○ C)
