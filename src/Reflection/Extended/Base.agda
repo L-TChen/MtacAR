@@ -99,7 +99,7 @@ instance
   _>>=_  ⦃ TCM ⦄ = bindTC
 
   TCA : Applicative TC
-  TCA = monad⇒applicative ⦃ TCM ⦄
+  TCA = monad⇒applicative {TC} ⦃ TCM ⦄
 
   TCAlter : Alternative TC
   empty ⦃ TCAlter ⦄ = typeError []

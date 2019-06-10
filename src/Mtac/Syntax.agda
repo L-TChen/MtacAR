@@ -23,7 +23,7 @@ Ptele-syntax2 C f = Ptele C f
 syntax Ptele-syntax2 C (λ x → e) = x ∶ C , e
 
 mmatch-syntax = mmatch
-syntax mmatch-syntax (λ x → τ) a pats = mcase a ∶ x ⇒ τ of pats
+syntax mmatch-syntax f a pats = mcase a ∶ f of pats
 
 mcase_of_ : {P : A → Set ℓ} (a : A) → Patts P (suc n) → ○ P a
 mcase_of_ {P = P} a xs = mmatch P a xs

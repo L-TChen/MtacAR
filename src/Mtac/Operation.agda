@@ -4,6 +4,7 @@ module Mtac.Operation where
 
 open import Prelude
 open import Reflection.Extended
+  renaming (getContext to getContextTC)
 
 open import Mtac.Core
 
@@ -24,6 +25,16 @@ isMvar a = liftTC $ caseM quoteTC a of λ where
     (meta x args) → return true
     _             → return false
 
+_≟_ : A → B → ○ Bool
+a ≟ b = (◎ do
+  (`a , `b) ← ⦇ quoteTC a , quoteTC b ⦈
+  `a =′ `b
+  return○′ true) <|> return false
+
+-- dangerous
+coe : ○ A → ○ B
+coe ma = ◎ (toTC ma)
+
 ------------------------------------------------------------------------
 private
   from : ℕ → Args Type → List (Term × Term)
@@ -40,5 +51,8 @@ lookup : (A : Set ℓ) → List (Term × Term) → ○ A
 lookup A cxt = ◎ quoteTC A >>= λ `A →
   asum (check `A <$> cxt) <|> return (failed "lookup" `A)
 
+getContext : ○ List (Term × Term)
+getContext = liftTC $ from 0 <$> getContextTC
+
 lookupContext : (A : Set ℓ) → ○ A
-lookupContext A = (liftTC $ from 0 <$> getContext) >>= lookup A
+lookupContext A = getContext >>= lookup A

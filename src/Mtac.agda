@@ -1,3 +1,5 @@
+{-# OPTIONS --without-K #-}
+
 module Mtac where
 
 open import Mtac.Core      public

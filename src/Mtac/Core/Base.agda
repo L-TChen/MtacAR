@@ -86,7 +86,7 @@ instance
     tac       → return tac
 
   ○-Applicative : Applicative ○_
-  ○-Applicative = monad⇒applicative {○_}
+  ○-Applicative = monad⇒applicative {○_} ⦃ ○-Monad ⦄
 
   ○-Functor : Functor ○_
   ○-Functor = functor ○-Applicative
