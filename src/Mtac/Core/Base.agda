@@ -13,6 +13,7 @@ data Tac : Set where
   error   : (e : Exception)            → Tac
   -- other types of exceptions, e.g., no matched pattern, abstraction over a non-variable
 
+
 -- ○ deals with the universe levels.
 -- It is problematic if ○ A = TC Tac.
 record ○_ (A : Set ℓ) : Set ℓ where
@@ -27,7 +28,7 @@ infixr 0 ○_
 ------------------------------------------------------------------------
 -- Run a typed tactic
 
-runTT : ○ A → Tactic
+runTT : ○ A → Term → TC _
 runTT {A = A} (◎ ta) hole = do
   `holeTy ← inferType hole
   `A      ← quoteTC A
@@ -92,7 +93,7 @@ instance
   ○-Functor = functor ○-Applicative
 
   ○-Alternative : Alternative ○_
-  _∙_   ⦃ ○-Alternative ⦄ _ _ = _
+  _∙_   ⦃ ○-Alternative ⦄ tt tt = tt
   empty ⦃ ○-Alternative ⦄ = ◎ return (failed "" unknown)
   _<|>_ ⦃ ○-Alternative ⦄ (◎ ta) (◎ tb) = ◎ caseM ta of λ where
     (failed _ _) → tb

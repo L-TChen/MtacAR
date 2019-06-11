@@ -1,10 +1,9 @@
 {-# OPTIONS --safe --without-K #-}
 
-module Mtac.Operation where
+module Mtac.Operations where
 
 open import Prelude
 open import Reflection.Extended
-  renaming (getContext to getContextTC)
 
 open import Mtac.Core
 
@@ -25,34 +24,21 @@ isMvar a = liftTC $ caseM quoteTC a of λ where
     (meta x args) → return true
     _             → return false
 
-_≟_ : A → B → ○ Bool
-a ≟ b = (◎ do
-  (`a , `b) ← ⦇ quoteTC a , quoteTC b ⦈
-  `a =′ `b
-  return○′ true) <|> return false
-
--- dangerous
-coe : ○ A → ○ B
-coe ma = ◎ (toTC ma)
-
 ------------------------------------------------------------------------
 private
-  from : ℕ → Args Type → List (Term × Term)
-  from n []                 = []
-  from n ((arg i `A) ∷ `AS) =
-    (`A , var₀ n) ∷ from (1 + n) `AS
-
   check : Term → (Term × Term) → TC Tac
   check `A (`B , `b) = do
     `A =′ `B
     return $ term `b
 
-lookup : (A : Set ℓ) → List (Term × Term) → ○ A
-lookup A cxt = ◎ quoteTC A >>= λ `A →
-  asum (check `A <$> cxt) <|> return (failed "lookup" `A)
-
-getContext : ○ List (Term × Term)
-getContext = liftTC $ from 0 <$> getContextTC
+  lookup : (A : Set ℓ) → List (Term × Term) → ○ A
+  lookup A cxt = ◎ quoteTC A >>= λ `A →
+    asum (check `A <$> cxt) <|> return (failed "lookup" `A)
 
 lookupContext : (A : Set ℓ) → ○ A
-lookupContext A = getContext >>= lookup A
+lookupContext A = (liftTC $ from 0 <$> getContext) >>= lookup A
+  where
+    from : ℕ → Args Type → List (Term × Term)
+    from n []                 = []
+    from n ((arg i `A) ∷ `AS) =
+      (`A , var₀ n) ∷ from (1 + n) `AS

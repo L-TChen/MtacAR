@@ -5,15 +5,17 @@ module Mtac.Examples.Nu where
 open import Prelude
 open import Mtac
 
-solveAny : ○ A
-solveAny {A = A} = ν x ∶ A ⇒ ⦇ x ⦈
+solveAny : (A : Set) → ○ A
+solveAny A = ν x ∶ A ⇒ ⦇ x ⦈
 
-runAny : A
-runAny = {!!}
+Magic : ⊥
+Magic = {! run (ν x ∶ ⊥ ⇒ ⦇ x ⦈) !} -- Uncaught exception: The result contains a local name
 
 NoNu : ℕ
 NoNu = Proof
-  try (ν x ∶ ℕ ⇒ return x) finally return 42
+  try (ν x ∶ ℕ ⇒ return x) catch (λ where
+    LocalName → return 42
+    _         → return 24)
   ∎
 
 Abs : ○ (ℕ → ℕ)

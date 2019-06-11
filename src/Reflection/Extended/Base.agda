@@ -86,10 +86,8 @@ instance
       ; inst    → "Instance" } }
 
   RelevanceShow : Show Relevance
-  RelevanceShow = record
-    { show = λ
-      { relevant   → "relevant"
-      ; irrelevant → "irrelevant" } }
+  show ⦃ RelevanceShow ⦄ relevant   = "relevant"
+  show ⦃ RelevanceShow ⦄ irrelevant = "irrelevant"
 
   ArgInfoShow : Show ArgInfo
   show ⦃ ArgInfoShow ⦄ (argInfo v r) = show v ++ " " ++ show r ++ " arg"
@@ -107,7 +105,7 @@ instance
   _∙_   ⦃ TCAlter ⦄ = λ _ _ → _
 
   TCFunctor : Functor TC
-  TCFunctor = TCA .functor
+  TCFunctor = functor TCA
 
   FunctorArg : Functor Arg
   _<$>_ ⦃ FunctorArg ⦄ f (arg i x) = arg i (f x)
@@ -130,10 +128,6 @@ ErrorParts = List ErrorPart
 Names      = List Name
 Clauses    = List Clause
 Cxt        = Args Type
-
--- Every metaprogram / tactic is of type `Term → TC ⊤`
-Tactic : Set
-Tactic = Term → TC ⊤
 
 visibility : ArgInfo → Visibility
 visibility (argInfo v _) = v
@@ -160,7 +154,7 @@ isVisible : Arg A → Bool
 isVisible (arg (argInfo visible _) _) = true
 isVisible _ = false
 
-give : Term → Tactic
+give : Term → Term → TC _
 give v hole = unify hole v
 
 newMeta : Type → TC Term
@@ -191,12 +185,6 @@ _`$$_ : Term → Terms → Term
 t `$$ [] = t
 t `$$ (x ∷ args) = (t `$ x) `$$ args
 
-_:′_ : Term → Type → TC Term
-_:′_ = checkType
-{-
-λ′ : Arg Type → TC A → TC A
-λ′ = extendContext
--}
 infix 2 _=′_
 _=′_ : Term → Term → TC ⊤
 x =′ y = do
@@ -204,7 +192,7 @@ x =′ y = do
   unify x y <|> (debugPrint "mtac" 50 (strErr "Failed" ∷ []) >> empty)
   debugPrint "mtac" 50 $ strErr "Succeed!" ∷ []
 
-evalTC : TC A → Tactic
+evalTC : TC A → Term → TC _
 evalTC {A = A} c hole = do
   v  ← c
   `v ← quoteTC v
@@ -213,10 +201,10 @@ evalTC {A = A} c hole = do
   unify checkedHole `v
 
 macro
-  runT : Tactic → Tactic
+  runT : (Term → TC _) → Term → TC _
   runT t = t
 
-  evalT : TC A → Tactic
+  evalT : TC A → Term → TC _
   evalT = evalTC
 
 define : Arg Name → Type → List Clause → TC ⊤

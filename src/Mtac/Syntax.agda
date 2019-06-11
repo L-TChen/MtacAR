@@ -5,7 +5,7 @@
 
 module Mtac.Syntax where
 
-open import Prelude
+open import Prelude hiding (_∷_; [])
 open import Reflection.Extended
 
 open import Mtac.Core
@@ -40,7 +40,7 @@ nu-syntax A = nu {A = A}
 syntax nu-syntax A (λ x → e) = ν x ∶ A ⇒ e
 
 abs-syntax : {P : A → Set ℓ} (x : A) → ○ P x → ○ (∀ y → P y)
-abs-syntax x ○px = mabs x =<< ○px
+abs-syntax x ○px = mabs x "" =<< ○px
 
 syntax abs-syntax x ○px = ƛ x ⇒ ○px
 

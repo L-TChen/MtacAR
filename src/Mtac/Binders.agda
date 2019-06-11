@@ -1,4 +1,4 @@
-{-# OPTIONS --without-K --safe -v mtac:100 #-}
+{-# OPTIONS --without-K --safe #-}
 
 module Mtac.Binders where
 
@@ -30,16 +30,16 @@ reset n m t = recTerm {A = ℕ × ℕ → Term} record idRec
   ; Ppi  = λ dom cod nm → pi ((nm |>_) <$> dom) ((bimap suc suc nm |>_) <$> cod)
   } t (n , m)
 
-absVar : ℕ → Term → Term
-absVar n t = vLam "_" $ reset (suc n) 0 (weaken 1 t)
+absVar : String → ℕ → Term → Term
+absVar s n t = vLam s $ reset (suc n) 0 (weaken 1 t)
 
-mabs : {P : A → Set ℓ} (x : A) → P x → ○ ((y : A) → P y)
-mabs x px = ◎ do
+mabs : {P : A → Set ℓ} (x : A) → (name : String) → P x → ○ ((y : A) → P y)
+mabs x s px = ◎ do
   `x@(var₀ i) ← quoteTC! x
     where t → throw′ (NotVariable t)
 
   ⦇ if ⦇ (i ##_) getContext ⦈
-    then ⦇ (absVar i) (quoteTC px) ⦈ >>= return ∘ term
+    then ⦇ (absVar s i) (quoteTC px) ⦈ >>= return ∘ term
     else throw′ (VariableNotFresh `x) ⦈
 
 -- name restriction / local name : ν x . t
