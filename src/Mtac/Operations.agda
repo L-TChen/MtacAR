@@ -20,9 +20,7 @@ mvar : (A : Set ℓ) → ○ A
 mvar A = ◎ quoteTC A >>= newMeta >>= return ∘ term
 
 isMvar : A → ○ Bool
-isMvar a = liftTC $ caseM quoteTC a of λ where
-    (meta x args) → return true
-    _             → return false
+isMvar a = liftTC $ isMeta a
 
 ------------------------------------------------------------------------
 private

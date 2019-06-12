@@ -2,7 +2,7 @@
 
 module Reflection.Extended.DeBruijn where
 
-open import Prelude.Core hiding (bind)
+open import Prelude hiding (bind)
 open import Reflection.Extended.Base
 
 record DeBruijn {a} (A : Set a) : Set a where
@@ -137,16 +137,16 @@ instance
   strengthenFrom {{DeBruijnTerm}} = strTerm
   weakenFrom     {{DeBruijnTerm}} = wk
 
-  DeBruijnList : ∀ {a} {A : Set a} {{_ : DeBruijn A}} → DeBruijn (List A)
+  DeBruijnList : {{_ : DeBruijn A}} → DeBruijn (List A)
   DeBruijnList = DeBruijnTraversable
-{-
-  DeBruijnVec : ∀ {a} {A : Set a} {{_ : DeBruijn A}} {n : ℕ} → DeBruijn (Vec A n)
+
+  DeBruijnVec : {{_ : DeBruijn A}} {n : ℕ} → DeBruijn (Vec A n)
   DeBruijnVec = DeBruijnTraversable
--}
-  DeBruijnArg : {A : Set} {{_ : DeBruijn A}} → DeBruijn (Arg A)
+
+  DeBruijnArg : {{_ : DeBruijn A}} → DeBruijn (Arg A)
   DeBruijnArg = DeBruijnTraversable
 
-  DeBruijnMaybe : {A : Set} {{_ : DeBruijn A}} → DeBruijn (Maybe A)
+  DeBruijnMaybe : {{_ : DeBruijn A}} → DeBruijn (Maybe A)
   DeBruijnMaybe = DeBruijnTraversable
 
 -- Strip bound names (to ensure _==_ checks α-equality)

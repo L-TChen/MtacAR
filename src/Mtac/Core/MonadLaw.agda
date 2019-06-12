@@ -2,9 +2,7 @@
 module Mtac.Core.MonadLaw where
 
 open import Prelude
-
 open import Reflection.Extended
-open import Relation.Binary.PropositionalEquality.Core
 
 open import Mtac.Core
 --------------------------------------------------------------------------------

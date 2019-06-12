@@ -3,7 +3,7 @@
 {-# OPTIONS --without-K --safe #-}
 module Reflection.Extended.Base where
 
-open import Prelude.Core
+open import Prelude
 
 import Agda.Builtin.Reflection as Builtin
 open module TC = Builtin public
@@ -97,7 +97,7 @@ instance
   _>>=_  ⦃ TCM ⦄ = bindTC
 
   TCA : Applicative TC
-  TCA = monad⇒applicative {TC} ⦃ TCM ⦄
+  TCA = Monad⇒Applicative {TC} ⦃ TCM ⦄
 
   TCAlter : Alternative TC
   empty ⦃ TCAlter ⦄ = typeError []
@@ -105,7 +105,7 @@ instance
   _∙_   ⦃ TCAlter ⦄ = λ _ _ → _
 
   TCFunctor : Functor TC
-  TCFunctor = functor TCA
+  TCFunctor = Applicative⇒Functor
 
   FunctorArg : Functor Arg
   _<$>_ ⦃ FunctorArg ⦄ f (arg i x) = arg i (f x)
@@ -157,14 +157,20 @@ isVisible _ = false
 give : Term → Term → TC _
 give v hole = unify hole v
 
+
+quoteTC! : A → TC Term
+quoteTC! a = quoteTC a >>= reduce
+
 newMeta : Type → TC Term
 newMeta `A = do
   t ← checkType unknown `A
   debugPrint "mtac" 50 $ strErr "New metavar" ∷ termErr t ∷ strErr ":" ∷ termErr `A ∷ []
   return t
 
-quoteTC! : A → TC Term
-quoteTC! a = quoteTC a >>= reduce
+isMeta : A → TC Bool
+isMeta a = caseM quoteTC a of λ where
+    (meta x []) → return true
+    _           → return false
 
 newMeta! : TC Term
 newMeta! = newMeta unknown
