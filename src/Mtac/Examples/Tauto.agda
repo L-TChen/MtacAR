@@ -26,15 +26,15 @@ tauto {ℓ} P = mcase P of
      ∣ A ∶ _ , P ∶ (A → Set) , (∀ a → P a)  ⇒ (ν y ∶ A ⇒ ƛ y ⇒ tauto (P y))
      ∣ A ∶ Set ℓ , Q ∶ (A → Set ℓ) , Σ A Q  ⇒ (do
        x ← mvar A
-       bind {M = λ {ℓ} _ _ → ○_} (tauto (Q x)) λ r →
-         ifM isMvar x then ⦇⦈ else ⦇ (x , r) ⦈ ) -- why instance argument cannot solve this?
+       r ← (tauto (Q x))
+       ifM isMvar x then ⦇⦈ else ⦇ (Σ A Q ∋ (x , r))  ⦈ )
      ∣ A ∶ _ , x ∶ A , x ≡ x  ⇒ ⦇ refl ⦈
-     ∣ P ∶ _ , P              ⇒ lookupContext P
+     ∣ P ⇒ (lookupContext P)
      end
 
 trivial₁ : (n : ℕ) → ⊥ ⊎ (n ≡ n) × (Σ _ λ n → n ≡ 0)
-trivial₁ =  run (tauto _)
+trivial₁ = run (tauto _)
 
 
-trivial₂ : ℕ → List ℕ → ℕ -- see issue agda/agda#3831
-trivial₂ = {! run (tauto _) !}
+-- -- -- trivial₂ : ℕ → List ℕ → ℕ -- see issue agda/agda#3831
+-- -- -- trivial₂ = {! run (tauto _) !}

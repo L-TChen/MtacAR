@@ -28,6 +28,8 @@ syntax mmatch-syntax f a pats = mcase a ∶ f of pats
 mcase_of_ : {P : A → Set ℓ} (a : A) → Patts P (suc n) → ○ P a
 mcase_of_ {P = P} a xs = mmatch P a xs
 
+
+
 pattern _end pat = pat ∷ []
 pattern _∣_ x xs = x ∷ xs
 
