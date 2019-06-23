@@ -29,12 +29,11 @@ tauto {ℓ} P = mcase P of
        r ← (tauto (Q x))
        ifM isMvar x then ⦇⦈ else ⦇ (Σ A Q ∋ (x , r))  ⦈ )
      ∣ A ∶ _ , x ∶ A , x ≡ x  ⇒ ⦇ refl ⦈
-     ∣ P ⇒ (lookupContext P)
+     ∣ P ⇒ lookupContext P
      end
 
 trivial₁ : (n : ℕ) → ⊥ ⊎ (n ≡ n) × (Σ _ λ n → n ≡ 0)
 trivial₁ = run (tauto _)
 
-
--- -- -- trivial₂ : ℕ → List ℕ → ℕ -- see issue agda/agda#3831
--- -- -- trivial₂ = {! run (tauto _) !}
+trivial₂ : ℕ → List ℕ → ℕ
+trivial₂ = run (tauto _)

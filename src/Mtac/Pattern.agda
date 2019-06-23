@@ -13,7 +13,7 @@ open import Mtac.Core
 -- side. Setω is used to contain arbitrary type in any universe level.
 -- universe polymorphism
 data Patt (P : A → Set ℓ) : Setω where
-  Pbase : (x : A)      (px : ○ P x)     → Patt P
+  Pbase : (x : A)      (px : ○ (P x))     → Patt P
   Ptele : (C : Set ℓ′) (f : C → Patt P) → Patt P
 
 data Patts (P : A → Set ℓ) : ℕ → Setω where
@@ -44,7 +44,7 @@ matchMany : Term → Patts P (suc n) → TC Term
 matchMany `a (x ∷ [])            = match1 `a x
 matchMany `a (x ∷ patts@(_ ∷ _)) = match1 `a x <|> matchMany `a patts
 
-mmatch : (P : ∀ A → Set ℓ) (a : A) → Patts P (suc n) → ○ P a
+mmatch : (P : ∀ A → Set ℓ) (a : A) → Patts P (suc n) → ○ (P a)
 mmatch P a patts = joinTC○ do
   `a ← quoteTC a
   (unquoteTC =<< matchMany `a patts) <|> return (throw NoPatternMatched)

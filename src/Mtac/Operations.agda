@@ -34,7 +34,7 @@ private
     asum (check `A <$> cxt) <|> return (failed "lookup" `A)
 
 lookupContext : (A : Set ℓ) → ○ A
-lookupContext A = (liftTC $ from 0 <$> getContext) >>= lookup A
+lookupContext A = liftTC ⦇ (from 0) getContext ⦈ >>= lookup A
   where
     from : ℕ → Args Type → List (Term × Term)
     from n []                 = []

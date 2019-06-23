@@ -12,7 +12,7 @@ open import Mtac.Core
 open import Mtac.Pattern
 open import Mtac.Binders
 
-Pbase-syntax : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {P : A → Set ℓ₂} (x : A) (px : ○ P x) → Patt P
+Pbase-syntax : {P : A → Set ℓ} (x : A) (px : ○ (P x)) → Patt P
 Pbase-syntax  = Pbase
 
 syntax Pbase-syntax x b = x ⇒ b
@@ -25,10 +25,8 @@ syntax Ptele-syntax2 C (λ x → e) = x ∶ C , e
 mmatch-syntax = mmatch
 syntax mmatch-syntax f a pats = mcase a ∶ f of pats
 
-mcase_of_ : {P : A → Set ℓ} (a : A) → Patts P (suc n) → ○ P a
+mcase_of_ : {P : A → Set ℓ} (a : A) → Patts P (suc n) → ○ (P a)
 mcase_of_ {P = P} a xs = mmatch P a xs
-
-
 
 pattern _end pat = pat ∷ []
 pattern _∣_ x xs = x ∷ xs
@@ -41,7 +39,7 @@ nu-syntax A = nu {A = A}
 
 syntax nu-syntax A (λ x → e) = ν x ∶ A ⇒ e
 
-abs-syntax : {P : A → Set ℓ} (x : A) → ○ P x → ○ (∀ y → P y)
+abs-syntax : {P : A → Set ℓ} (x : A) → ○ (P x) → ○ (∀ y → P y)
 abs-syntax x ○px = mabs x "" =<< ○px
 
 syntax abs-syntax x ○px = ƛ x ⇒ ○px

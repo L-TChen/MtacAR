@@ -16,14 +16,13 @@ data Tac : Set where
 
 -- ○ deals with the universe levels.
 -- It is problematic if ○ A = TC Tac.
-record ○_ (A : Set ℓ) : Set ℓ where
+record ○ (A : Set ℓ) : Set ℓ where
   constructor ◎_
   field
     toTC : TC Tac
-open ○_ public
+open ○ public
 
 infixr 0 ◎_
-infixr 0 ○_
 
 ------------------------------------------------------------------------
 -- Run a typed tactic
@@ -75,24 +74,24 @@ liftTC ma = ◎ ma >>= return○′
 
 instance
 -- Monad laws are proved in Mtac.Core.MonadLaw
-  ○-Monad : Monad ○_
+  ○-Monad : Monad ○
   ○-Monad = record
     { return = return○
     ; _>>=_  = bind○ }
 
-  ○-MonadErr : MonadError Exception ○_
+  ○-MonadErr : MonadError Exception ○
   throw      ⦃ ○-MonadErr ⦄ err      = ◎ return (error err)
   try_catch_ ⦃ ○-MonadErr ⦄ (◎ ta) f = ◎ caseM ta of λ where
     (error e) → toTC (f e)
     tac       → return tac
 
-  ○-Applicative : Applicative ○_
-  ○-Applicative = Monad⇒Applicative {○_} ⦃ ○-Monad ⦄
+  ○-Applicative : Applicative ○
+  ○-Applicative = Monad⇒Applicative {○} ⦃ ○-Monad ⦄
 
-  ○-Functor : Functor ○_
+  ○-Functor : Functor ○
   ○-Functor = Applicative⇒Functor
 
-  ○-Alternative : Alternative ○_
+  ○-Alternative : Alternative ○
   _∙_   ⦃ ○-Alternative ⦄ tt tt = tt
   empty ⦃ ○-Alternative ⦄ = ◎ return (failed "" unknown)
   _<|>_ ⦃ ○-Alternative ⦄ (◎ ta) (◎ tb) = ◎ caseM ta of λ where

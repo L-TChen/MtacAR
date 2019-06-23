@@ -11,7 +11,7 @@ data _∈_ {A : Set ℓ} (x : A) : List A → Set ℓ where
   there : ∀ {y xs} → x ∈ xs → x ∈ y ∷ xs
 
 {-# TERMINATING #-}
-search : (x : A) (xs : List A) → ○ x ∈ xs
+search : (x : A) (xs : List A) → ○ (x ∈ xs)
 search x xs = mcase xs ∶ (λ xs → x ∈ xs) of
   ∣ ys ∶ _ , x ∷ ys          ⇒  ⦇ here ⦈
   ∣ ys ∶ _ , y ∶ _ , y ∷ ys  ⇒  ⦇ there (search _ _) ⦈
