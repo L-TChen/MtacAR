@@ -32,7 +32,7 @@ tauto {ℓ} P = mcase P of
      ∣ P ⇒ lookupContext P
      end
 
-trivial₁ : (n : ℕ) → ⊥ ⊎ (n ≡ n) × (Σ _ λ n → n ≡ 0)
+trivial₁ : (n : ℕ) → ⊥ ⊎ (n ≡ n) × (Σ _ λ n → n ≡ 0) × ℕ
 trivial₁ = run (tauto _)
 
 trivial₂ : ℕ → List ℕ → ℕ

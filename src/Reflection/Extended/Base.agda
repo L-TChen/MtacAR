@@ -161,10 +161,7 @@ quoteTC! : A → TC Term
 quoteTC! a = quoteTC a >>= reduce
 
 newMeta : Type → TC Term
-newMeta `A = do
-  t ← checkType unknown `A
---  debugPrint "mtac" 50 $ strErr "New metavar" ∷ termErr t ∷ strErr ":" ∷ termErr `A ∷ []
-  return t
+newMeta = checkType unknown
 
 isMeta : A → TC Bool
 isMeta a = caseM quoteTC a of λ where
@@ -192,9 +189,9 @@ t `$$ (x ∷ args) = (t `$ x) `$$ args
 
 infix 2 _=′_
 _=′_ : Term → Term → TC ⊤
-x =′ y = do
+x =′ y = unify x y
 --  debugPrint "mtac" 50 $ strErr "Unifying" ∷ termErr x ∷ strErr "with" ∷ termErr y ∷ []
-  unify x y <|> (debugPrint "mtac" 50 (strErr "Failed" ∷ []) >> empty)
+--  unify x y <|> (debugPrint "mtac" 50 (strErr "Failed" ∷ []) >> empty)
 --  debugPrint "mtac" 50 $ strErr "Succeed!" ∷ []
 
 evalTC : TC A → Term → TC _
