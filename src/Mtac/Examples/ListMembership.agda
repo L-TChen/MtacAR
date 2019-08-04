@@ -40,4 +40,4 @@ search2 {A = A} x xs = mcase xs of
   end
 
 4∈xs++ys : 4 ∈ (3 ∷ 4 ∷ []) ++ (1 ∷ 5 ∷ 7 ∷ 8 ∷ 9 ∷ 10 ∷ 11 ∷ 12 ∷ 13 ∷ [])
-4∈xs++ys = run (search _ _)
+4∈xs++ys = run (search2 _ _)
