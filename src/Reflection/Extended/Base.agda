@@ -50,8 +50,8 @@ pattern def₁ f x       = def f (vArg x ∷ [])
 pattern def₂ f x y     = def f (vArg x ∷ vArg y ∷ [])
 pattern def₃ f x y z   = def f (vArg x ∷ vArg y ∷ vArg z ∷ [])
 pattern def₄ f x y z u = def f (vArg x ∷ vArg y ∷ vArg z ∷ vArg u ∷ [])
-pattern _↦_ ps t = clause ps t
-infix 8 _↦_
+pattern ⟨_,_⟩↦_ tel ps t = clause tel ps t
+infix 8 ⟨_,_⟩↦_
 
 pattern sortSet t = sort (set t)
 pattern sortLit i = sort (lit i)
@@ -128,6 +128,7 @@ ErrorParts = List ErrorPart
 Names      = List Name
 Clauses    = List Clause
 Cxt        = Args Type
+Telescope  = List (String × Arg Type)
 
 visibility : ArgInfo → Visibility
 visibility (argInfo v _) = v

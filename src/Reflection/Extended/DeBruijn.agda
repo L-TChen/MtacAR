@@ -30,7 +30,7 @@ patternBindings = binds
     binds (arg _ a ∷ as) = bind a + binds as
 
     bind (con c ps) = binds ps
-    bind dot        = 1
+    bind (dot t)    = 1
     bind (var _)    = 1
     bind (lit l)    = 0
     bind (proj x)   = 0
@@ -78,8 +78,8 @@ private
   strClauses lo k [] = just []
   strClauses lo k (c ∷ cs) = _∷_ <$> strClause lo k c <*> strClauses lo k cs
 
-  strClause lo k (clause ps b)      = clause ps <$> strTerm (lo + patternBindings ps) k b
-  strClause lo k (absurd-clause ps) = just (absurd-clause ps)
+  strClause lo k (clause tel ps b)  = clause tel ps <$> strTerm (lo + patternBindings ps) k b
+  strClause lo k (absurd-clause tel ps) = just (absurd-clause tel ps)
 
 private
   Wk : Set → Set
@@ -118,8 +118,8 @@ private
   wkClauses lo k []       = []
   wkClauses lo k (c ∷ cs) = wkClause lo k c ∷ wkClauses lo k cs
 
-  wkClause lo k (clause ps b)      = clause ps (wk (lo + patternBindings ps) k b)
-  wkClause lo k (absurd-clause ps) = absurd-clause ps
+  wkClause lo k (clause tel ps b)  = clause tel ps (wk (lo + patternBindings ps) k b)
+  wkClause lo k (absurd-clause tel ps) = absurd-clause tel ps
 
 -- Instances --
 
@@ -182,8 +182,8 @@ mutual
     stripClauses (x ∷ xs) = stripClause x ∷ stripClauses xs
 
     stripClause : Clause → Clause
-    stripClause (clause ps t) = clause ps (stripBoundNames t)
-    stripClause (absurd-clause ps) = absurd-clause ps
+    stripClause (clause tel ps t)      = clause tel ps (stripBoundNames t)
+    stripClause (absurd-clause tel ps) = absurd-clause tel ps
 
     stripSort : Sort → Sort
     stripSort (set t) = set (stripBoundNames t)

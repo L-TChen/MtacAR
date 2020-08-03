@@ -13,15 +13,15 @@ record TermRec {A B C : Set} : Set where
     Plam : Visibility → Abs A → A
     Ppat-lam : List B → List (Arg A) → A
     Ppi      : Arg A → Abs A → A
-    Psort : C → A
-    PsortSet : A → C
-    PsortLit : ℕ → C
+    Psort        : C → A
+    PsortSet     : A → C
+    PsortLit     : ℕ → C
     PsortUnknown : C
     Plit  : Literal → A
     Pmeta : Meta → List (Arg A) → A
-    Punknown : A
-    Pclause : List (Arg Pattern) → A → B
-    PabsClause : List (Arg Pattern) → B -- where
+    Punknown   : A
+    Pclause    : Telescope → List (Arg Pattern) → A → B
+    PabsClause : Telescope → List (Arg Pattern) → B -- where
   mutual
     recArg : Arg Term → Arg A
     recArg (arg i x) = arg i (recTerm x)
@@ -34,8 +34,8 @@ record TermRec {A B C : Set} : Set where
     recAbs (abs s t) = abs s (recTerm t)
 
     recClause : Clause → B
-    recClause (clause ps t)      = Pclause ps (recTerm t)
-    recClause (absurd-clause ps) = PabsClause ps
+    recClause (clause tel ps t)      = Pclause tel ps (recTerm t)
+    recClause (absurd-clause tel ps) = PabsClause tel ps
 
     recClauses : List Clause → List B
     recClauses [] = []
@@ -75,8 +75,8 @@ idRec = record
   ; Plit     = λ l a → lit l
   ; Pmeta    = λ x args a → meta x ((λ { (arg i x) → arg i (x a) }) <$> args)
   ; Punknown = λ _ → unknown
-  ; Pclause    = λ ps t a → ps ↦ t a
-  ; PabsClause = λ ps a → absurd-clause ps
+  ; Pclause    = λ tel ps t a → ⟨ tel , ps ⟩↦ (t a)
+  ; PabsClause = λ ps a → λ _ → absurd-clause ps a
   }
 
 anyTermRec : TermRec {A → Bool} {⊤} {⊤}
