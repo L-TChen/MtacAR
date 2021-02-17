@@ -27,11 +27,36 @@ infixr 0 ◎_
 ------------------------------------------------------------------------
 -- Run a typed tactic
 
-runTT : ○ A → Term → TC _
+getMetas : Term → List Meta
+getMetas = recTerm (record
+                      { Pvar         = λ _ → concatMap unArg
+                      ; Pcon         = λ _ → concatMap unArg
+                      ; Pdef         = λ _ → concatMap unArg
+                      ; Plam         = λ _ → unAbs
+                      ; Ppat-lam     = λ _ → concatMap unArg
+                      ; Ppi          = λ xs ys → unArg xs ++ unAbs ys
+                      ; Psort        = λ _ → []
+                      ; PsortSet     = λ xs → xs
+                      ; PsortLit     = λ _ → []
+                      ; PsortUnknown = []
+                      ; Plit         = λ _ → []
+                      ; Pmeta        = λ x xs → x ∷ concatMap unArg xs
+                      ; Punknown     = []
+                      ; Pclause      = λ _ _ xs → xs
+                      ; PabsClause   = λ _ _ → []
+                      })
+
+runTT : ○ A → Term → TC ⊤
 runTT {A = A} (◎ ta) hole = do
+
   `holeTy ← inferType hole
   `A      ← quoteTC A
-  unify `holeTy `A          -- check if hole's type is unifible with A.
+
+  debugPrint "mtac" 10 [ strErr "The type of hole has meta variables: " ]
+  let metas = getMetas `A
+  for metas λ s → debugPrint "mtac" 10 [ strErr (show s) ]
+
+  `holeTy =′ `A          -- check if hole's type is unifible with A.
 
   caseM ta of λ where
     (error e)       → typeError $ strErr "Uncaught exception:" ∷ toErrorPart e

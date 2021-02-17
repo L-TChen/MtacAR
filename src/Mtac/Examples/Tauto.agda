@@ -10,10 +10,10 @@ open import Mtac
 prop-tauto : {P : Set} → ○ P
 prop-tauto {P} =
   mcase P of
-     ∣ ⊤                       ⇒   ⦇ tt ⦈
-     ∣ P ∶ _ , Q ∶ _ , P × Q   ⇒   ⦇ prop-tauto , prop-tauto ⦈
-     ∣ P ∶ _ , Q ∶ _ , P ⊎ Q   ⇒   ⦇ inj₁ prop-tauto | inj₂ prop-tauto ⦈
-     ∣ P ∶ _ , P               ⇒   ⦇⦈
+     ∣ ⊤                     ⇒ ⦇ tt ⦈
+     ∣ P ∶ _ , Q ∶ _ , P × Q ⇒ ⦇ prop-tauto , prop-tauto ⦈
+     ∣ P ∶ _ , Q ∶ _ , P ⊎ Q ⇒ ⦇ inj₁ prop-tauto | inj₂ prop-tauto ⦈
+     ∣ P ∶ _ , P             ⇒ ⦇⦈
   end
 
 -- A simple first-order tautology prover.
@@ -21,19 +21,25 @@ prop-tauto {P} =
 {-# TERMINATING #-}
 tauto : (P : Set ℓ) → ○ P
 tauto {ℓ} P = mcase P of
-     ∣ P ∶ Set ℓ , Q ∶ Set ℓ , P × Q   ⇒ ⦇ tauto P , tauto Q ⦈
-     ∣ P ∶ Set ℓ , Q ∶ Set ℓ , P ⊎ Q   ⇒ ⦇ inj₁ (tauto P) | inj₂ (tauto Q) ⦈
+     ∣ P ∶ Set ℓ , Q ∶ Set ℓ , P × Q        ⇒ ⦇ tauto P , tauto Q ⦈
+     ∣ P ∶ Set ℓ , Q ∶ Set ℓ , P ⊎ Q        ⇒ ⦇ inj₁ (tauto P) | inj₂ (tauto Q) ⦈
      ∣ A ∶ _ , P ∶ (A → Set) , (∀ a → P a)  ⇒ (ν y ∶ A ⇒ ƛ y ⇒ tauto (P y))
      ∣ A ∶ Set ℓ , Q ∶ (A → Set ℓ) , Σ A Q  ⇒ (do
        x ← mvar A
        r ← (tauto (Q x))
        ifM isMvar x then ⦇⦈ else ⦇ (Σ A Q ∋ (x , r))  ⦈ )
-     ∣ A ∶ _ , x ∶ A , x ≡ x  ⇒ ⦇ refl ⦈
-     ∣ P ⇒ lookupContext P
+     ∣ A ∶ _ , x ∶ A , x ≡ x                ⇒ ⦇ refl ⦈
+     ∣ P                                    ⇒ lookupContext P
      end
 
 trivial₁ : (n : ℕ) → ⊥ ⊎ (n ≡ n) × (Σ _ λ n → n ≡ 0) × ℕ
 trivial₁ = run (tauto _)
 
-trivial₂ : ℕ → List ℕ → ℕ
-trivial₂ = run (tauto _)
+trivial₂ : ℕ → ℕ
+trivial₂ = run (tauto _) -- run (tauto _)
+
+trivial₃ : ℕ → ℕ → ℕ
+trivial₃ = run (tauto _) -- run (tauto _)
+
+S : (ℕ → A) → (ℕ → A)
+S = {!!} -- run (tauto _)

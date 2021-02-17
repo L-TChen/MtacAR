@@ -190,10 +190,10 @@ t `$$ (x ∷ args) = (t `$ x) `$$ args
 
 infix 2 _=′_
 _=′_ : Term → Term → TC ⊤
-x =′ y = unify x y
---  debugPrint "mtac" 50 $ strErr "Unifying" ∷ termErr x ∷ strErr "with" ∷ termErr y ∷ []
---  unify x y <|> (debugPrint "mtac" 50 (strErr "Failed" ∷ []) >> empty)
---  debugPrint "mtac" 50 $ strErr "Succeed!" ∷ []
+x =′ y = do -- unify x y
+  debugPrint "mtac" 50 $ strErr "Unifying " ∷ termErr x ∷ strErr " with " ∷ termErr y ∷ []
+  unify x y <|> (debugPrint "mtac" 50 (strErr "Failed" ∷ []) >> empty)
+  debugPrint "mtac" 50 $ strErr "Succeed!" ∷ []
 
 evalTC : TC A → Term → TC _
 evalTC {A = A} c hole = do
@@ -252,3 +252,4 @@ recordConstructor r =
   caseM getConstructors r of λ
   { (c ∷ []) → pure c
   ; _ → typeError $ strErr "Cannot get constructor of non-record type" ∷ nameErr r ∷ [] }
+

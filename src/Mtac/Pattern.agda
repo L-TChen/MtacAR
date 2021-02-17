@@ -37,6 +37,9 @@ split (Ptele C f)  =
 match1 : Term → Patt P → TC Term
 match1 `a pat = do
   `lhs , `rhs ← split pat
+  debugPrint "mtac" 30 (strErr "The LHS is " ∷ termErr `lhs ∷ [])
+  debugPrint "mtac" 30 (strErr "The RHS is " ∷ termErr `rhs ∷ [])
+  debugPrint "mtac" 30 (strErr "The term to match is " ∷ termErr `a ∷ [])
   `a =′ `lhs
   return `rhs
 

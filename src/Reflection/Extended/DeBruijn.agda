@@ -34,7 +34,7 @@ patternBindings = binds
     bind (var _)    = 1
     bind (lit l)    = 0
     bind (proj x)   = 0
-    bind absurd     = 0
+    bind (absurd _) = 0
 
 private
   Str : Set → Set
