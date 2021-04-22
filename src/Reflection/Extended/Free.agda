@@ -1,4 +1,4 @@
-{-# OPTIONS --safe --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
 module Reflection.Extended.Free where
 
@@ -15,7 +15,10 @@ record TermRec {A B C : Set} : Set where
     Ppi      : Arg A → Abs A → A
     Psort        : C → A
     PsortSet     : A → C
+    PsortProp    : A → C
     PsortLit     : ℕ → C
+    PsortPropLit : ℕ → C
+    PsortInf     : ℕ → C
     PsortUnknown : C
     Plit  : Literal → A
     Pmeta : Meta → List (Arg A) → A
@@ -44,7 +47,10 @@ record TermRec {A B C : Set} : Set where
     recSort : Sort → C
     recSort (set t) = PsortSet (recTerm t)
     recSort (lit n) = PsortLit n
-    recSort unknown = PsortUnknown
+    recSort (prop t)    = PsortProp (recTerm t)
+    recSort (propLit n) = PsortPropLit n
+    recSort (inf n)     = PsortInf n
+    recSort unknown     = PsortUnknown
 
     recTerm : Term → A
     recTerm (var x args) = Pvar x (recArgs args)
@@ -71,6 +77,9 @@ idRec = record
   ; Psort    = λ { s a → sort (s a) }
   ; PsortSet = λ t a → set (t a)
   ; PsortLit = λ n _ → lit n
+  ; PsortProp    = λ t a → prop (t a)
+  ; PsortPropLit = λ n _ → lit n
+  ; PsortInf     = λ n _ → inf n
   ; PsortUnknown = λ _ → unknown
   ; Plit     = λ l a → lit l
   ; Pmeta    = λ x args a → meta x ((λ { (arg i x) → arg i (x a) }) <$> args)

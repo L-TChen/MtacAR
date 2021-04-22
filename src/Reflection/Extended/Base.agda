@@ -1,12 +1,14 @@
+{-# OPTIONS --without-K --safe #-}
+
 -- Code inspired by or copied from Ulf Norell's agda-prelude https://github.com/UlfNorell/agda-prelude
 
-{-# OPTIONS --without-K --safe #-}
 module Reflection.Extended.Base where
 
 open import Prelude
 
 import Agda.Builtin.Reflection as Builtin
-open module TC = Builtin public
+module TC = Builtin
+open TC public
   renaming ( left-assoc  to assocˡ
            ; right-assoc to assocʳ
            ; primQNameFixity to getFixity

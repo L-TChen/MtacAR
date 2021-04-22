@@ -36,10 +36,10 @@ trivial₁ : (n : ℕ) → ⊥ ⊎ (n ≡ n) × (Σ _ λ n → n ≡ 0) × ℕ
 trivial₁ = run (tauto _)
 
 trivial₂ : ℕ → ℕ
-trivial₂ = run (tauto _) -- run (tauto _)
+trivial₂ = run (tauto _)
 
 trivial₃ : ℕ → ℕ → ℕ
-trivial₃ = run (tauto _) -- run (tauto _)
+trivial₃ = run (tauto _)
 
 S : (ℕ → A) → (ℕ → A)
 S = {!!} -- run (tauto _)

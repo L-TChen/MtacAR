@@ -44,6 +44,3 @@ open import Reflection.Extended
 -- 4∈xs++ys : (xs : List ℕ) → 3 ∈ L._++_ xs (3 ∷ 4 ∷ [])
 -- 4∈xs++ys xs = run (search2 3 (xs L.++ (3 ∷ 4 ∷ [])))
 
-f : Term → Term
-f (quoteTerm 3) = {!!}
-f t = ?
