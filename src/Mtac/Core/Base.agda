@@ -13,7 +13,6 @@ data Tac : Set where
   error   : (e : Exception)            → Tac
   -- other types of exceptions, e.g., no matched pattern, abstraction over a non-variable
 
-
 -- ○ deals with the universe levels.
 -- It is problematic if ○ A = TC Tac.
 record ○ (A : Set ℓ) : Set ℓ where
@@ -27,37 +26,17 @@ infixr 0 ◎_
 ------------------------------------------------------------------------
 -- Run a typed tactic
 
-getMetas : Term → List Meta
-getMetas = recTerm (record
-                      { Pvar         = λ _ → concatMap unArg
-                      ; Pcon         = λ _ → concatMap unArg
-                      ; Pdef         = λ _ → concatMap unArg
-                      ; Plam         = λ _ → unAbs
-                      ; Ppat-lam     = λ _ → concatMap unArg
-                      ; Ppi          = λ xs ys → unArg xs ++ unAbs ys
-                      ; Psort        = λ _ → []
-                      ; PsortSet     = λ xs → xs
-                      ; PsortLit     = λ _ → []
-                      ; PsortProp    = λ xs → xs
-                      ; PsortPropLit = λ _ → []
-                      ; PsortInf     = λ _ → []
-                      ; PsortUnknown = []
-                      ; Plit         = λ _ → []
-                      ; Pmeta        = λ x xs → x ∷ concatMap unArg xs
-                      ; Punknown     = []
-                      ; Pclause      = λ _ _ xs → xs
-                      ; PabsClause   = λ _ _ → []
-                      })
-
 runTT : ○ A → Term → TC ⊤
 runTT {A = A} (◎ ta) hole = do
 
   `holeTy ← inferType hole
   `A      ← quoteTC A
 
-  debugPrint "mtac" 10 [ strErr "The type of hole has meta variables: " ]
-  let metas = getMetas `A
-  for metas λ s → debugPrint "mtac" 10 [ strErr (show s) ]
+  when true do
+    debugPrint "mtac" 10 [ strErr "The type of hole has meta variables: " ]
+    let metas = getMetas `A
+    for metas λ s → debugPrint "mtac" 10 [ strErr (show s) ]
+    return _
 
   `holeTy =′ `A          -- check if hole's type is unifible with A.
 

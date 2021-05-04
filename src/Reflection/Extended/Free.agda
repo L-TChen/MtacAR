@@ -100,3 +100,25 @@ anyTermRec = record
   ; Pmeta        = λ _ args a → any ((_$ a) ∘ unArg) args ; Punknown     = λ _ → false
   ; Pclause      = λ _ _ → _ ; PabsClause   = λ _ → _
   }
+
+getMetas : Term → List Meta
+getMetas = recTerm (record
+    { Pvar         = λ _ → concatMap unArg
+    ; Pcon         = λ _ → concatMap unArg
+    ; Pdef         = λ _ → concatMap unArg
+    ; Plam         = λ _ → unAbs
+    ; Ppat-lam     = λ _ → concatMap unArg
+    ; Ppi          = λ xs ys → unArg xs ++ unAbs ys
+    ; Psort        = λ _ → []
+    ; PsortSet     = λ xs → xs
+    ; PsortLit     = λ _ → []
+    ; PsortProp    = λ xs → xs
+    ; PsortPropLit = λ _ → []
+    ; PsortInf     = λ _ → []
+    ; PsortUnknown = []
+    ; Plit         = λ _ → []
+    ; Pmeta        = λ x xs → x ∷ concatMap unArg xs
+    ; Punknown     = []
+    ; Pclause      = λ _ _ xs → xs
+    ; PabsClause   = λ _ _ → []
+    })

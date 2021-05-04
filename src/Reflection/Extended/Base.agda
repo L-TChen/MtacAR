@@ -19,9 +19,11 @@ open TC public
            ; prim-fun    to primitive′
            ; instance′   to inst)
 
-pattern visible′           = argInfo visible   relevant
-pattern hidden′            = argInfo hidden    relevant
-pattern instance′          = argInfo inst      relevant
+pattern relevant′₀         = modality relevant quantity-0
+pattern relevant′ω         = modality relevant quantity-ω
+pattern visible′           = argInfo visible   relevant′ω
+pattern hidden′            = argInfo hidden    relevant′ω
+pattern instance′          = argInfo inst      relevant′ω
 pattern vArg ty            = arg visible′  ty
 pattern hArg ty            = arg hidden′   ty
 pattern iArg ty            = arg instance′ ty
@@ -87,12 +89,17 @@ instance
       ; hidden  → "Implicit"
       ; inst    → "Instance" } }
 
+  QuantitiyShow : Show Quantity
+  show ⦃ QuantitiyShow ⦄ quantity-0 = "quantity-0"
+  show ⦃ QuantitiyShow ⦄ quantity-ω = "quantity-ω"
+
   RelevanceShow : Show Relevance
   show ⦃ RelevanceShow ⦄ relevant   = "relevant"
   show ⦃ RelevanceShow ⦄ irrelevant = "irrelevant"
 
   ArgInfoShow : Show ArgInfo
-  show ⦃ ArgInfoShow ⦄ (argInfo v r) = show v ++ " " ++ show r ++ " arg"
+  show ⦃ ArgInfoShow ⦄ (argInfo v (modality r q)) =
+    show v ++ " " ++ show r ++ " " ++ show q ++ " arg"
 
   TCM : Monad TC
   return ⦃ TCM ⦄ = returnTC
@@ -136,7 +143,10 @@ visibility : ArgInfo → Visibility
 visibility (argInfo v _) = v
 
 relevance : ArgInfo → Relevance
-relevance (argInfo _ r) = r
+relevance (argInfo _ (modality r _)) = r
+
+quantity : ArgInfo → Quantity
+quantity (argInfo _ (modality _ q)) = q
 
 unArg : Arg A → A
 unArg (arg _ x) = x
